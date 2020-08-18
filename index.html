@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+</head>
+
+<body>
+  <div id="main-controls">
+    <button id="reset-btn" title="Reset network">
+      <svg width="25px" height="25px" viewBox="0 -1 16 16" class="bi bi-arrow-repeat" fill="rgb(80, 80, 80)" xmlns="http://www.w3.org/2000/svg" stroke="rgb(80, 80, 80)" stroke-width="0.5">
+        <path fill-rule="evenodd" d="M2.854 7.146a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L2.5 8.207l1.646 1.647a.5.5 0 0 0 .708-.708l-2-2zm13-1a.5.5 0 0 0-.708 0L13.5 7.793l-1.646-1.647a.5.5 0 0 0-.708.708l2 2a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0 0-.708z"/>
+        <path fill-rule="evenodd" d="M8 3a4.995 4.995 0 0 0-4.192 2.273.5.5 0 0 1-.837-.546A6 6 0 0 1 14 8a.5.5 0 0 1-1.001 0 5 5 0 0 0-5-5zM2.5 7.5A.5.5 0 0 1 3 8a5 5 0 0 0 9.192 2.727.5.5 0 1 1 .837.546A6 6 0 0 1 2 8a.5.5 0 0 1 .501-.5z"/>
+      </svg>
+    </button>
+    <button id="train-btn" title="Train network">
+      <svg width="4em" height="4em" viewBox="-1 0 16 16" class="bi bi-play-fill" fill="white" xmlns="http://www.w3.org/2000/svg" id="play">
+        <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+      </svg>
+      <svg width="4em" height="4em" viewBox="0 0 16 16" class="bi bi-pause-fill" fill="white" xmlns="http://www.w3.org/2000/svg" id="pause">
+        <path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"/>
+      </svg>
+    </button>
+    <div id="epoch">Epoch: 0</div>
+    <div id="slidecontainer">
+      <input type="range" min="0" max="20" value="0" class="slider" id="epochSlider">
+    </div>
+    <div id="activation-controls"></div>
+  </div>
+  <div id="layer-controls">
+    <button id="add-layer-btn" title="Add hidden layer">
+      <svg width="2em" height="2em" viewBox="0 -1 16 16" class="bi bi-plus" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1">
+        <path fill-rule="evenodd" d="M8 3.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5H4a.5.5 0 0 1 0-1h3.5V4a.5.5 0 0 1 .5-.5z"/>
+        <path fill-rule="evenodd" d="M7.5 8a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0V8z"/>
+      </svg>
+    </button>
+    <span id="layer-text">2 hidden layers</span>
+    <button id="remove-layer-btn" title="Remove hidden layer">
+      <svg width="2em" height="2em" viewBox="0 -1 16 16" class="bi bi-dash" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1">
+        <path fill-rule="evenodd" d="M3.5 8a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z"/>
+      </svg>
+    </button>
+  </div>
+  <div id="node-controls"></div>
+  <div id="network"></div>
+  <div id="acc-chart"></div>
+  <div id="loss-chart"></div>
+  <div id="tooltip">Hover me</div>
+  <script src="index.js" type="module"></script>
+</body>
+</html> 
