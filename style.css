@@ -1,17 +1,151 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
 button {
     outline:none;
 }
 
-#acc-chart {
+.add-node-btn, .remove-node-btn {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border: 0px solid rgba(255, 255, 255, 0);
+    border-radius: 50%;
+    background-color: rgb(191, 191, 191);
+    cursor:pointer;
+    transition-duration: 0.3s;
+}
+
+.chart {
     position: absolute;
     left: 950px;
+    z-index: -1;
+}
+
+.control-elt {
+    margin: 10px 5px;
+    padding: 0;
+    color: white;
+    position: absolute;
+    top: -10px;
+}
+
+.input-label-pair {
+    display: block;
+}
+
+.main-control-elt {
+    margin: 15px 5px;
+    padding: 0;
+    display: inline-block;
+    color: white;
+}
+
+.node-control-pair {
+    position: absolute;
+    padding: 5px 0 0;
+}
+
+#acc-chart {
     top: 145px;
 }
 
+#add-layer-btn, #remove-layer-btn {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border: 0px solid rgba(255, 255, 255, 0);
+    border-radius: 50%;
+    background-color: rgb(191, 191, 191);
+    cursor:pointer;
+    transition-duration: 0.3s;
+}
+
+#add-layer-btn:hover, #remove-layer-btn:hover, .add-node-btn:hover, .remove-node-btn:hover {
+    background-color: rgb(170, 170, 170);
+}
+
+#epoch {
+    width: 135px;
+    text-align: center;
+    color: white;
+    vertical-align: 20px;
+    border-radius: 5px;
+    background-color: rgb(50, 50, 50);
+    padding: 15px 0;
+} 
+
+#epoch-slider {
+    width: 100%;
+    height: 20px;
+    border-radius: 15px; 
+}
+
+#layer-controls {
+    width: 900px;
+    height: 30px;
+    padding-bottom: 7px;
+    margin-left: 40px;
+    text-align: center;
+}
+
+#layer-text, .node-text {
+    vertical-align: 6px;
+    padding: 0 10px;
+}
+
 #loss-chart {
-    position: absolute;
-    left: 950px;
     top: 385px;
+}
+
+#main-controls {
+    width: 100%;
+    height: 90px;
+    background-color: rgb(35, 35, 35);
+    margin-bottom: 10px;
+}
+
+#num-epochs {
+    position: absolute;
+    top: -15px;
+    right: 465px;
+}
+
+#num-epochs-input {
+    width: 110px;
+    height: 60px;
+    text-align: center;
+    font-size: 24px;
+    border-radius: 5px;
+}
+
+#reset-btn {
+    width: 40px;
+    height: 40px;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border: 0px solid rgba(255, 255, 255, 0);
+    border-radius: 50%;
+    background-color: rgb(232, 232, 232);
+    vertical-align: 13px;
+    margin: 10px 5px 10px 15px;
+    cursor:pointer;
+    transition-duration: 0.3s;
+}
+
+#reset-btn:hover {
+    background-color: rgb(200, 200, 200);
+}
+
+#slidecontainer {
+    width: 450px;
+    vertical-align: 16px;
 }
 
 #tooltip {
@@ -30,10 +164,6 @@ button {
     opacity: 0;
 }
 
-#main-controls {
-    height: 60px;
-}
-
 #train-btn {
     width: 57px;
     height: 57px;
@@ -43,103 +173,10 @@ button {
     border: 0px solid rgba(255, 255, 255, 0);
     border-radius: 50%;
     background-color: rgb(51, 133, 255);
-    margin: 0 5px;
-    cursor:pointer;
-}
-
-#train-btn:hover {
-    background-color: rgb(0, 102, 255);
-}
-
-#reset-btn {
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
-    border: 0px solid rgba(255, 255, 255, 0);
-    border-radius: 50%;
-    background-color: rgb(232, 232, 232);
-    vertical-align: 13px;
-    margin: 0 5px;
     cursor:pointer;
     transition-duration: 0.3s;
 }
 
-#reset-btn:hover {
-    background-color: rgb(200, 200, 200);
-}
-
-#epoch {
-    width: 130px;
-    text-align: center;
-    vertical-align: 20px;
-    margin: 0 5px;
-} 
-
-#slidecontainer {
-    width: 500px;
-    vertical-align: 16px;
-    margin: 0 5px;
-}
-
-#epochSlider {
-    width: 100%;
-    height: 20px;
-    border-radius: 15px; 
-}
-
-#layer-controls {
-    width: 900px;
-    height: 30px;
-    padding: 0 0 10px;
-    margin-left: 40px;
-    text-align: center;
-}
-
-#layer-text, .node-text {
-    vertical-align: 6px;
-    padding: 0 10px;
-}
-
-#add-layer-btn, #remove-layer-btn {
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
-    border: 0px solid rgba(255, 255, 255, 0);
-    border-radius: 50%;
-    background-color: rgb(191, 191, 191);
-    cursor:pointer;
-}
-
-#add-layer-btn:hover, #remove-layer-btn:hover, .add-node-btn:hover, .remove-node-btn:hover {
-    background-color: rgb(170, 170, 170);
-}
-
-#epoch, #slidecontainer, #activation-controls {
-    display: inline-block;
-}
-
-#activation-controls select {
-    position: absolute;
-    text-align: center;
-}
-
-.node-control-pair {
-    position: absolute;
-    padding: 5px 0 0;
-}
-
-.add-node-btn, .remove-node-btn {
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
-    border: 0px solid rgba(255, 255, 255, 0);
-    border-radius: 50%;
-    background-color: rgb(191, 191, 191);
-    cursor:pointer;
+#train-btn:hover {
+    background-color: rgb(0, 102, 255);
 }

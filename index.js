@@ -40,13 +40,15 @@ async function trainModel(model, dataset) {
     const pastWeights = [];
     const accLogs = [[], []];
     const lossLogs = [[], []];
+    const colors = ["steelblue", "firebrick"];
 
     const accChart = d3.select("#acc-chart > svg").append("g").attr("class", "data");
     const lossChart = d3.select("#loss-chart > svg").append("g").attr("class", "data");
     
     const epochNum = document.querySelector("#epoch");
-    const epochSlider = document.querySelector("#epochSlider");
+    const epochSlider = document.querySelector("#epoch-slider");
 
+    // TODO: fix this
     const x = d3.scaleLinear()
                 .domain([0, 20])
                 .rangeRound([30, constants.CHART_WIDTH - 20]);
@@ -61,8 +63,7 @@ async function trainModel(model, dataset) {
         callbacks: {
             onTrainBegin: (logs) => {
                 epochNum.innerHTML = "Initializing model...";
-                const weightVals = ui.getModelWeights(model);
-                pastWeights.push(weightVals);
+                pastWeights.push(ui.getModelWeights(model));
             },
             onEpochEnd: async (epoch, logs) => {
                 if (stopRequested) {
@@ -93,7 +94,7 @@ async function trainModel(model, dataset) {
                                      .x((d) => x(d.epoch))
                                      .y((d) => y(d.acc)))
                         .attr("fill", "none")
-                        .attr("stroke", "steelblue")
+                        .attr("stroke", (d, idx) => colors[idx])
                         .attr("stroke-width", 1.5);
                 lossChart.selectAll("path")
                          .data(lossLogs)
@@ -103,7 +104,7 @@ async function trainModel(model, dataset) {
                                       .x((d) => x(d.epoch))
                                       .y((d) => y(d.loss)))
                          .attr("fill", "none")
-                         .attr("stroke", "steelblue")
+                         .attr("stroke", (d, idx) => colors[idx])
                          .attr("stroke-width", 1.5);
 
                 // Plot the loss and accuracy values at the end of every training epoch.
@@ -127,7 +128,24 @@ function updateNetwork(svgContainer, network) {
     const nodes = neuralNet.createLayerNodes(network);
     const edges = neuralNet.createLayerEdges(network);
     const model = createModel(network);
-    ui.update(svgContainer, network, nodes, edges, model);
+    ui.update({ 
+                  svgEdges: svgContainer.select(".edges").selectAll("path"),
+                  helperEdges: svgContainer.select(".helperEdges").selectAll("path"),
+                  svgNodes: svgContainer.select(".nodes"),
+                  tooltip: d3.select("#tooltip")
+              }, 
+              {
+                  pauseIcon: document.querySelector("#pause"),
+                  nodeControls: document.querySelector("#node-controls"),
+                  slider: document.querySelector("#epoch-slider"),
+                  layerText: document.querySelector("#layer-text")
+              },
+              {
+                  network: network,
+                  nodes: nodes,
+                  edges: edges
+              },
+              model);
 
     return model;
 }
@@ -155,7 +173,10 @@ let tfModel = updateNetwork(svgContainer, networkLayers);
 let stopRequested = false;
 let pastWeights = [];
 ui.addActivationSelection(networkLayers);
-ui.addCharts();
+ui.addCharts({
+                 accChart: d3.select("#acc-chart"),
+                 lossChart: d3.select("#loss-chart")
+             });
 
 
 /***EVENT HANDLERS***/
@@ -168,17 +189,18 @@ document.querySelector("#train-btn")
 // document.querySelector("#reset-btn")
 //         .addEventListener("click", (event) => {
 //             interruptTraining();
+//             ui.clearCharts(d3.selectAll(".chart > svg"));
 //             tfModel = updateNetwork(svgContainer, networkLayers);
 //         });
 
-document.querySelector("#epochSlider")
+document.querySelector("#epoch-slider")
         .addEventListener("input", (event) => {
             document.querySelector("#epoch").innerHTML = "Epoch: " + event.target.value;
             const weightVals = pastWeights[event.target.value];
             ui.updateEdgeWeights({ 
-                                   svgEdges: d3.select(".edges").selectAll("path"),
-                                   helperEdges: d3.select(".helperEdges").selectAll("path"), 
-                                   tooltip: d3.select("#tooltip")
+                                   svgEdges: svgContainer.select(".edges").selectAll("path"),
+                                   helperEdges: svgContainer.select(".helperEdges").selectAll("path"), 
+                                   tooltip: d3.select("#tooltip"),
                                  }, weightVals);
 
         });

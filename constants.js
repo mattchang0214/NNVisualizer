@@ -9,4 +9,6 @@ export const constants = Object.freeze({
     DEFAULT_OUTPUT_ACTIVATION: "Softmax",
     CHART_WIDTH: 360,
     CHART_HEIGHT: 240,
+    IMG_WIDTH: 66,
+    IMG_HEIGHT: 44,
 });
