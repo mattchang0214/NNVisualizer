@@ -186,12 +186,12 @@ document.querySelector("#train-btn")
             pastWeights = await trainModel(tfModel, dataset);
         });
 
-// document.querySelector("#reset-btn")
-//         .addEventListener("click", (event) => {
-//             interruptTraining();
-//             ui.clearCharts(d3.selectAll(".chart > svg"));
-//             tfModel = updateNetwork(svgContainer, networkLayers);
-//         });
+document.querySelector("#reset-btn")
+        .addEventListener("click", (event) => {
+            interruptTraining();
+            ui.clearCharts(d3.selectAll(".chart > svg"));
+            tfModel = updateNetwork(svgContainer, networkLayers);
+        });
 
 document.querySelector("#epoch-slider")
         .addEventListener("input", (event) => {
@@ -205,43 +205,43 @@ document.querySelector("#epoch-slider")
 
         });
 
-// document.querySelector("#add-layer-btn")
-//         .addEventListener("click", (event) => {
-//             if (networkLayers.hiddenLayers.length > 5) {
-//                 return;
-//             }
-//             interruptTraining();
-//             neuralNet.addHiddenLayer(networkLayers, 4, "relu");
-//             tfModel = updateNetwork(svgContainer, networkLayers);
-//         });
+document.querySelector("#add-layer-btn")
+        .addEventListener("click", (event) => {
+            if (networkLayers.hiddenLayers.length > 5) {
+                return;
+            }
+            interruptTraining();
+            neuralNet.addHiddenLayer(networkLayers, 4, "relu");
+            tfModel = updateNetwork(svgContainer, networkLayers);
+        });
 
-// document.querySelector("#remove-layer-btn")
-//         .addEventListener("click", (event) => {
-//             if (networkLayers.hiddenLayers.length < 1) {
-//                 return;
-//             }
-//             interruptTraining();
-//             neuralNet.removeHiddenLayer(networkLayers);
-//             tfModel = updateNetwork(svgContainer, networkLayers);
-//         });
+document.querySelector("#remove-layer-btn")
+        .addEventListener("click", (event) => {
+            if (networkLayers.hiddenLayers.length < 1) {
+                return;
+            }
+            interruptTraining();
+            neuralNet.removeHiddenLayer(networkLayers);
+            tfModel = updateNetwork(svgContainer, networkLayers);
+        });
 
-// document.querySelector("#node-controls")
-//         .addEventListener("click", (event) => {
-//             const target = event.target.closest(".add-node-btn, .remove-node-btn");
-//             if (target.className == "add-node-btn") {
-//                 if (networkLayers.hiddenLayers[target.value].size > 9) {
-//                     return;
-//                 }
-//                 interruptTraining();
-//                 networkLayers.hiddenLayers[target.value].size++;
-//                 tfModel = updateNetwork(svgContainer, networkLayers);
-//             }
-//             else if (target.className == "remove-node-btn") {
-//                 if (networkLayers.hiddenLayers[target.value].size < 2) {
-//                     return;
-//                 }
-//                 interruptTraining();
-//                 networkLayers.hiddenLayers[target.value].size--;
-//                 tfModel = updateNetwork(svgContainer, networkLayers);
-//             }
-//         });
+document.querySelector("#node-controls")
+        .addEventListener("click", (event) => {
+            const target = event.target.closest(".add-node-btn, .remove-node-btn");
+            if (target.className == "add-node-btn") {
+                if (networkLayers.hiddenLayers[target.value].size > 9) {
+                    return;
+                }
+                interruptTraining();
+                networkLayers.hiddenLayers[target.value].size++;
+                tfModel = updateNetwork(svgContainer, networkLayers);
+            }
+            else if (target.className == "remove-node-btn") {
+                if (networkLayers.hiddenLayers[target.value].size < 2) {
+                    return;
+                }
+                interruptTraining();
+                networkLayers.hiddenLayers[target.value].size--;
+                tfModel = updateNetwork(svgContainer, networkLayers);
+            }
+        });
