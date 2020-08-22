@@ -34,7 +34,6 @@ function createModel(network) {
 }
 
 async function trainModel(model, dataset) {
-    const EPOCHS = 20;
     const BATCH_SIZE = 32;
 
     const pastWeights = [];
@@ -58,11 +57,11 @@ async function trainModel(model, dataset) {
 
     const history = await model.fit(dataset.xTrain, dataset.yTrain, {
         batchSize: BATCH_SIZE,
-        epochs: EPOCHS,
+        epochs: getEpoch(),
         validationData: [dataset.xVal, dataset.yVal],
         callbacks: {
             onTrainBegin: (logs) => {
-                epochNum.innerHTML = "Initializing model...";
+                epochNum.innerHTML = "Loading...";
                 pastWeights.push(ui.getModelWeights(model));
             },
             onEpochEnd: async (epoch, logs) => {
@@ -155,6 +154,12 @@ function interruptTraining() {
     document.querySelector("#epoch").innerHTML = "Epoch: 0";
 }
 
+function getEpoch() {
+    if (!document.querySelector("#num-epochs").checkValidity()) {
+        document.querySelector("#num-epochs-input").value = constants.DEFAULT_EPOCHS;
+    }
+    return document.querySelector("#num-epochs-input").value;
+}
 
 
 /***MAIN SCRIPT***/
@@ -172,6 +177,7 @@ const networkLayers = neuralNet.getDefaultNetwork();
 let tfModel = updateNetwork(svgContainer, networkLayers);
 let stopRequested = false;
 let pastWeights = [];
+document.querySelector("#num-epochs-input").value = constants.DEFAULT_EPOCHS;
 ui.addActivationSelection(networkLayers);
 ui.addCharts({
                  accChart: d3.select("#acc-chart"),
@@ -203,6 +209,13 @@ document.querySelector("#epoch-slider")
                                    tooltip: d3.select("#tooltip"),
                                  }, weightVals);
 
+        });
+
+document.querySelector("#num-epochs-input")
+        .addEventListener("input", (event) => {
+            interruptTraining();
+            event.target.closest("form").reportValidity();
+            tfModel = updateNetwork(svgContainer, networkLayers);
         });
 
 document.querySelector("#add-layer-btn")

@@ -1,4 +1,4 @@
-export function transform(selectElt, replace) {
+export function transform(selectElt, settings) {
     if (selectElt.nodeName == null || selectElt.nodeName.toLowerCase() !== "select") {
         throw new Error("Attempted to transform invalid element: argument must be a <select> element");
     }
@@ -18,6 +18,9 @@ export function transform(selectElt, replace) {
             const option = createOption(child);
             if (child.selected) {
                 selected = option.cloneNode(true);
+                if (!settings.displayImg) {
+                    selected.removeChild(selected.childNodes[1]);
+                }
                 option.classList.toggle("selected");
             }
             options.push(option);
@@ -37,21 +40,21 @@ export function transform(selectElt, replace) {
     selectedOption.append(selected);
     const span1 = document.createElement("SPAN");
     span1.setAttribute("class", "select-caret-icon");
-    span1.innerHTML = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-caret-down-fill" fill="black" xmlns="http://www.w3.org/2000/svg">\n' + 
-                      '<path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>\n'
+    span1.innerHTML = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1.5">\n' + 
+                      '<path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>\n'
                       '</svg>';
     const span2 = document.createElement("SPAN");
     span2.setAttribute("class", "select-caret-icon");
     span2.style.display = "none";
-    span2.innerHTML = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-caret-up-fill" fill="black" xmlns="http://www.w3.org/2000/svg">\n' + 
-                      '<path d="M7.247 4.86l-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>\n'
+    span2.innerHTML = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-up" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1.5">\n' + 
+                      '<path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>\n'
                       '</svg>';
     selectedOption.append(span1, span2);
 
     selectContainer.append(selectedOption, optionList);
-    addClickHandler(selectContainer, span1, span2, optionList);
+    addClickHandler(selectContainer, span1, span2, optionList, settings.displayImg);
 
-    if (replace) {
+    if (settings.replace) {
         selectElt.parentNode.replaceChild(selectContainer, selectElt);
     }
     
@@ -83,7 +86,7 @@ function createOption(elt) {
 }
 
 
-function addClickHandler(container, expand, hide, list) {
+function addClickHandler(container, expand, hide, list, displayImg) {
     container.addEventListener("click", (event) => {
         expand.style.display = expand.style.display === "none" ? "block" : "none";
         hide.style.display = hide.style.display === "none" ? "block" : "none";
@@ -93,6 +96,9 @@ function addClickHandler(container, expand, hide, list) {
         if (target != null) {
             const temp = target.cloneNode(true);
             temp.setAttribute("class", "selected-option");
+            if (!displayImg) {
+                temp.removeChild(temp.childNodes[1]);
+            }
             const parent = container.querySelector(".select-display");
             parent.replaceChild(temp, parent.firstChild);
             target.classList.toggle("selected");

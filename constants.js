@@ -5,10 +5,11 @@ export const constants = Object.freeze({
     RADIUS: 19,
     LEFT_POS: 100,
     RIGHT_POS: 850,
+    DEFAULT_EPOCHS: 20,
     DEFAULT_ACTIVATION: "ReLU",
     DEFAULT_OUTPUT_ACTIVATION: "Softmax",
     CHART_WIDTH: 360,
     CHART_HEIGHT: 240,
-    IMG_WIDTH: 66,
-    IMG_HEIGHT: 44,
+    IMG_WIDTH: 72,
+    IMG_HEIGHT: 48,
 });

@@ -1,6 +1,7 @@
 body {
     margin: 0;
     padding: 0;
+    font-family: 'Cairo', sans-serif;
 }
 
 button {
@@ -13,9 +14,9 @@ button {
     padding: 0;
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
-    border: 0px solid rgba(255, 255, 255, 0);
+    border: 0px solid rgb(255, 255, 255);
     border-radius: 50%;
-    background-color: rgb(191, 191, 191);
+    background-color: rgb(200, 200, 200);
     cursor:pointer;
     transition-duration: 0.3s;
 }
@@ -60,19 +61,41 @@ button {
     padding: 0;
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
-    border: 0px solid rgba(255, 255, 255, 0);
+    border: 0px solid rgb(255, 255, 255);
     border-radius: 50%;
-    background-color: rgb(191, 191, 191);
+    background-color: rgb(200, 200, 200);
     cursor:pointer;
     transition-duration: 0.3s;
 }
 
 #add-layer-btn:hover, #remove-layer-btn:hover, .add-node-btn:hover, .remove-node-btn:hover {
-    background-color: rgb(170, 170, 170);
+    background-color: rgb(180, 180, 180);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+#advanced-controls {
+    width: 50px;
+    height: 50px;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border: 0px solid rgb(255, 255, 255);
+    border-radius: 25%;
+    background-color: rgb(50, 50, 50);
+    margin: 10px 5px;
+    cursor:pointer;
+    transition-duration: 0.3s;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+#advanced-controls:hover {
+    background-color: rgb(60, 60, 60);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
 }
 
 #epoch {
-    width: 135px;
+    width: 110px;
     text-align: center;
     color: white;
     vertical-align: 20px;
@@ -107,22 +130,23 @@ button {
 #main-controls {
     width: 100%;
     height: 90px;
-    background-color: rgb(35, 35, 35);
+    background-color: rgb(66, 66, 66);
     margin-bottom: 10px;
 }
 
 #num-epochs {
     position: absolute;
-    top: -15px;
-    right: 465px;
+    top: -16px;
+    right: 480px;
 }
 
 #num-epochs-input {
     width: 110px;
-    height: 60px;
+    height: 50px;
     text-align: center;
-    font-size: 24px;
+    font-size: 20px;
     border-radius: 5px;
+    font-family: 'Cairo', sans-serif;
 }
 
 #reset-btn {
@@ -130,9 +154,9 @@ button {
     height: 40px;
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
-    border: 0px solid rgba(255, 255, 255, 0);
+    border: 0px solid rgb(255, 255, 255);
     border-radius: 50%;
-    background-color: rgb(232, 232, 232);
+    background-color: rgb(52, 188, 164);
     vertical-align: 13px;
     margin: 10px 5px 10px 15px;
     cursor:pointer;
@@ -140,7 +164,8 @@ button {
 }
 
 #reset-btn:hover {
-    background-color: rgb(200, 200, 200);
+    background-color: rgb(46, 169, 147);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
 }
 
 #slidecontainer {
@@ -170,13 +195,14 @@ button {
     padding: 0;
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
-    border: 0px solid rgba(255, 255, 255, 0);
+    border: 0px solid rgb(255, 255, 255);
     border-radius: 50%;
-    background-color: rgb(51, 133, 255);
+    background-color: rgb(33, 150, 243);
     cursor:pointer;
     transition-duration: 0.3s;
 }
 
 #train-btn:hover {
-    background-color: rgb(0, 102, 255);
+    background-color: rgb(12, 136, 235);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
 }

@@ -1,6 +1,10 @@
 .select-container, .select-options, .select-display {
     border-radius: 5px;
-    color: black;
+    color: white;
+}
+
+.select-container:hover {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
 .selected-option {
@@ -13,13 +17,13 @@
 .option {
     padding: 10px;
     display: list-item;
-    border-bottom: solid 1px rgb(200, 200, 200);
-    background-color: white;
+    border-bottom: solid 1px rgb(110, 110, 110);
+    background-color: rgb(80, 80, 80);
     cursor: pointer;
 }
 
 .option:hover {
-    background-color: rgb(235, 235, 235);
+    background-color: rgb(100, 100, 100);
     
 }
 
@@ -29,17 +33,17 @@
 
 .select-options {
     list-style: none;
-    border: solid 1px rgb(200, 200, 200);
+    border: solid 1px rgb(60, 60, 60);
     border-top: none;
-    box-shadow: 0px 1px 5px rgb(200, 200, 200);
+    box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.6);
     z-index: 100;
     margin: 0;
     padding: 0;
 }
 
 .select-display {
-    background-color: rgb(240, 240, 240);
-    border: solid 1px rgb(200, 200, 200);
+    background-color: rgb(80, 80, 80);
+    border: solid 1px rgb(60, 60, 60);
     position: relative;
     cursor: pointer;
 }
@@ -48,7 +52,7 @@
     position: absolute;
     right: 10px;
     top: 50%;
-    margin-top: -7px;
+    margin-top: -12px;
 }
 
 .option-img {

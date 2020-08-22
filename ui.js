@@ -148,7 +148,7 @@ export function addActivationSelection(network) {
     const activations = ["Linear", "ReLU", "Sigmoid", "Softmax", "Softplus", "Tanh"];
     const labels = ["Hidden Layer Activation", "Output Layer Activation"];
     const defaults = [constants.DEFAULT_ACTIVATION, constants.DEFAULT_OUTPUT_ACTIVATION];
-    const pos = [235, 5];
+    const pos = [285, 85];
     for (const idx in labels) {
         const div = document.createElement("DIV");
         div.setAttribute("class", "control-elt");
@@ -158,7 +158,7 @@ export function addActivationSelection(network) {
         label.setAttribute("class", "input-label-pair");
         const select = document.createElement("SELECT");
         select.setAttribute("class", "input-label-pair");
-        select.style.width = "220px";
+        select.style.width = "180px";
         for (const func of activations) {
             const option = document.createElement("OPTION");
             option.innerHTML = func;
@@ -171,7 +171,7 @@ export function addActivationSelection(network) {
             }
             select.append(option);
         }
-        div.append(label, selectTransform.transform(select, false));
+        div.append(label, selectTransform.transform(select, {replace: false, displayImg: false}));
         document.querySelector("#activation-controls").append(div);
     }
 }
