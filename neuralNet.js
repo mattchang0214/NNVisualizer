@@ -7,15 +7,15 @@ const NUM_CLASSES = 3;
 // define array of layer objects (size, position)
 export function getDefaultNetwork() {
     const network = {};
-    addIOLayers(network);
-    addHiddenLayer(network, 5, "relu");
-    addHiddenLayer(network, 6, "relu");
+    addIOLayers(network, constants.DEFAULT_OUTPUT_ACTIVATION.toLowerCase());
+    addHiddenLayer(network, 5, constants.DEFAULT_ACTIVATION.toLowerCase());
+    addHiddenLayer(network, 6, constants.DEFAULT_ACTIVATION.toLowerCase());
     return network;
 }
 
-function addIOLayers(network) {
+function addIOLayers(network, activation) {
     network.inputLayer = createLayerInfo("input", NUM_FEATURES, null, constants.LEFT_POS);
-    network.outputLayer = createLayerInfo("output", NUM_CLASSES, "softmax", constants.RIGHT_POS);
+    network.outputLayer = createLayerInfo("output", NUM_CLASSES, activation, constants.RIGHT_POS);
 }
 
 export function addHiddenLayer(network, size, activation) {
@@ -120,4 +120,14 @@ function addEdges(sourceLayer, destLayer, edges) {
             edges.push({source: sourceLayer.name, srcIdx: i, target: destLayer.name, tarIdx: j});
         }   
     }
+}
+
+export function setHiddenActivations(network, hidden) {
+    for (const layer of network.hiddenLayers) {
+        layer.activation = hidden;
+    }
+}
+
+export function setOutputActivation(network, output) {
+    network.outputLayer.activation = output;
 }

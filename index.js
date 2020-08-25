@@ -10,7 +10,7 @@ function createModel(network) {
     
     // create tf model from definition
     const model = tf.sequential();
-
+    
     if (network.hasOwnProperty("hiddenLayers") && network.hiddenLayers.length > 0) {
         const hLayers = network.hiddenLayers;
         model.add(tf.layers.dense({units: hLayers[0].size, activation: hLayers[0].activation, inputShape: [network.inputLayer.size]}));
@@ -33,27 +33,16 @@ function createModel(network) {
     return model;
 }
 
-async function trainModel(model, dataset) {
+async function trainModel(model, dataset, scales) {
     const BATCH_SIZE = 32;
 
     const pastWeights = [];
     const accLogs = [[], []];
     const lossLogs = [[], []];
     const colors = ["steelblue", "firebrick"];
-
-    const accChart = d3.select("#acc-chart > svg").append("g").attr("class", "data");
-    const lossChart = d3.select("#loss-chart > svg").append("g").attr("class", "data");
     
     const epochNum = document.querySelector("#epoch");
     const epochSlider = document.querySelector("#epoch-slider");
-
-    // TODO: fix this
-    const x = d3.scaleLinear()
-                .domain([0, 20])
-                .rangeRound([30, constants.CHART_WIDTH - 20]);
-    const y = d3.scaleLinear()
-                .domain([0, 1])
-                .rangeRound([constants.CHART_HEIGHT - 20, 20]);
 
     const history = await model.fit(dataset.xTrain, dataset.yTrain, {
         batchSize: BATCH_SIZE,
@@ -74,10 +63,10 @@ async function trainModel(model, dataset) {
 
                 const weightVals = ui.getModelWeights(model);
                 pastWeights.push(weightVals);
-                accLogs[0].push({epoch: epoch+1, acc: logs.acc});
-                accLogs[1].push({epoch: epoch+1, acc: logs.val_acc});
-                lossLogs[0].push({epoch: epoch+1, loss: logs.loss});
-                lossLogs[1].push({epoch: epoch+1, loss: logs.val_loss});
+                accLogs[0].push({epoch: epoch+1, value: logs.acc});
+                accLogs[1].push({epoch: epoch+1, value: logs.val_acc});
+                lossLogs[0].push({epoch: epoch+1, value: logs.loss});
+                lossLogs[1].push({epoch: epoch+1, value: logs.val_loss});
                 
                 ui.updateEdgeWeights({ 
                                        svgEdges: d3.select(".edges").selectAll("path"),
@@ -85,40 +74,26 @@ async function trainModel(model, dataset) {
                                        tooltip: d3.select("#tooltip")
                                      }, weightVals);
 
-                accChart.selectAll("path")
-                        .data(accLogs)
-                        .join((enter) => enter.append("path"))
-                        .attr("d", d3.line()
-                                     .curve(d3.curveCardinal)
-                                     .x((d) => x(d.epoch))
-                                     .y((d) => y(d.acc)))
-                        .attr("fill", "none")
-                        .attr("stroke", (d, idx) => colors[idx])
-                        .attr("stroke-width", 1.5);
-                lossChart.selectAll("path")
-                         .data(lossLogs)
-                         .join((enter) => enter.append("path"))
-                         .attr("d", d3.line()
-                                      .curve(d3.curveCardinal)
-                                      .x((d) => x(d.epoch))
-                                      .y((d) => y(d.loss)))
-                         .attr("fill", "none")
-                         .attr("stroke", (d, idx) => colors[idx])
-                         .attr("stroke-width", 1.5);
+                // Plot the loss and accuracy values at the end of every training epoch
+                ui.updateChart(d3.select("#acc-chart > svg"), 
+                               d3.line()
+                                 .curve(d3.curveMonotoneX)
+                                 .x((d) => scales.x(d.epoch))
+                                 .y((d) => scales.y(d.value)), 
+                               accLogs, colors, scales
+                               );
 
-                // Plot the loss and accuracy values at the end of every training epoch.
-                /*const secPerEpoch =
-                    (performance.now() - beginMs) / (1000 * (epoch + 1));
-                ui.status(`Training model... Approximately ${
-                    secPerEpoch.toFixed(4)} seconds per epoch`)
-                trainLogs.push(logs);
-                tfvis.show.history(lossContainer, trainLogs, ['loss', 'val_loss'])
-                tfvis.show.history(accContainer, trainLogs, ['acc', 'val_acc'])
-                calculateAndDrawConfusionMatrix(model, xTest, yTest);*/
+                ui.updateChart(d3.select("#loss-chart > svg"), 
+                               d3.line()
+                                 .curve(d3.curveMonotoneX)
+                                 .x((d) => scales.x(d.epoch))
+                                 .y((d) => scales.y(d.value)), 
+                               lossLogs, colors, scales
+                               );
             },
         }
     });
-
+    console.log(accLogs);
     epochSlider.disabled = false;
     return pastWeights;
 }
@@ -155,10 +130,12 @@ function interruptTraining() {
 }
 
 function getEpoch() {
-    if (!document.querySelector("#num-epochs").checkValidity()) {
+    if (!document.querySelector("#num-epochs").checkValidity() || !document.querySelector("#num-epochs-input").value) {
         document.querySelector("#num-epochs-input").value = constants.DEFAULT_EPOCHS;
     }
-    return document.querySelector("#num-epochs-input").value;
+    const epoch = document.querySelector("#num-epochs-input").value;
+    document.querySelector("#epoch-slider").max = epoch;
+    return epoch;
 }
 
 
@@ -177,20 +154,21 @@ const networkLayers = neuralNet.getDefaultNetwork();
 let tfModel = updateNetwork(svgContainer, networkLayers);
 let stopRequested = false;
 let pastWeights = [];
+
 document.querySelector("#num-epochs-input").value = constants.DEFAULT_EPOCHS;
 ui.addActivationSelection(networkLayers);
-ui.addCharts({
-                 accChart: d3.select("#acc-chart"),
-                 lossChart: d3.select("#loss-chart")
-             });
+const scales = ui.addCharts({
+                                accChart: d3.select("#acc-chart"),
+                                lossChart: d3.select("#loss-chart")
+                            });
 
 
 /***EVENT HANDLERS***/
 document.querySelector("#train-btn")
         .addEventListener("click", async (event) => {
             stopRequested = false;
-            pastWeights = await trainModel(tfModel, dataset);
-        });
+            pastWeights = await trainModel(tfModel, dataset, scales);
+        }, { once: true });
 
 document.querySelector("#reset-btn")
         .addEventListener("click", (event) => {
@@ -201,8 +179,12 @@ document.querySelector("#reset-btn")
 
 document.querySelector("#epoch-slider")
         .addEventListener("input", (event) => {
+            if (event.target.value >= pastWeights.length) {
+                return;
+            }
             document.querySelector("#epoch").innerHTML = "Epoch: " + event.target.value;
             const weightVals = pastWeights[event.target.value];
+
             ui.updateEdgeWeights({ 
                                    svgEdges: svgContainer.select(".edges").selectAll("path"),
                                    helperEdges: svgContainer.select(".helperEdges").selectAll("path"), 
@@ -257,4 +239,23 @@ document.querySelector("#node-controls")
                 networkLayers.hiddenLayers[target.value].size--;
                 tfModel = updateNetwork(svgContainer, networkLayers);
             }
+        });
+
+document.querySelector("#activation-controls > #hidden > .select-container")
+        .addEventListener("input", (event) => {
+            interruptTraining();
+            neuralNet.setHiddenActivations(networkLayers, event.target.value);
+            tfModel = updateNetwork(svgContainer, networkLayers);
+        });
+
+document.querySelector("#activation-controls > #output > .select-container")
+        .addEventListener("input", (event) => {
+            interruptTraining();
+            neuralNet.setOutputActivation(networkLayers, event.target.value);
+            tfModel = updateNetwork(svgContainer, networkLayers);
+        });
+
+document.querySelector("#advanced-controls")
+        .addEventListener("click", (event) => {
+            alert("Under construction...");
         });
