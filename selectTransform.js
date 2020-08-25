@@ -8,19 +8,18 @@ export function transform(selectElt, settings) {
     selectContainer.style.width = selectElt.style.width;
     
     const optionList = document.createElement("UL");
-    optionList.setAttribute("class", "select-options");
+    optionList.className = "select-options";
     optionList.style.display = "none";
     optionList.style.width = selectElt.style.width;
     const options = [];
-    let selected = createOption(selectElt.childNodes[0]);
+    let selected = createOption(selectElt.childNodes[0], true, settings.displayImg);
+    let val = selectElt.childNodes[0].value ? selectElt.childNodes[0].value : selectElt.childNodes[0].innerHTML;
     for (const child of selectElt.childNodes) {
         if (child.nodeName != null && child.nodeName.toLowerCase() === "option") {
-            const option = createOption(child);
+            const option = createOption(child, false, true);
             if (child.selected) {
-                selected = option.cloneNode(true);
-                if (!settings.displayImg) {
-                    selected.removeChild(selected.childNodes[1]);
-                }
+                selected = createOption(child, true, settings.displayImg);
+                val = child.value ? child.value : child.innerHTML;
                 option.classList.toggle("selected");
             }
             options.push(option);
@@ -33,26 +32,10 @@ export function transform(selectElt, settings) {
         optionList.append(optionContainer);
     }
 
-    const selectedOption = document.createElement("DIV");
-    selectedOption.setAttribute("class", "select-display");
-    selectedOption.style.width = selectElt.style.width;
-    selected.setAttribute("class", "selected-option");
-    selectedOption.append(selected);
-    const span1 = document.createElement("SPAN");
-    span1.setAttribute("class", "select-caret-icon");
-    span1.innerHTML = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1.5">\n' + 
-                      '<path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>\n'
-                      '</svg>';
-    const span2 = document.createElement("SPAN");
-    span2.setAttribute("class", "select-caret-icon");
-    span2.style.display = "none";
-    span2.innerHTML = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-up" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1.5">\n' + 
-                      '<path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>\n'
-                      '</svg>';
-    selectedOption.append(span1, span2);
-
-    selectContainer.append(selectedOption, optionList);
-    addClickHandler(selectContainer, span1, span2, optionList, settings.displayImg);
+    const selectedBox = createSelectDisplay(selectElt, selected, val);
+    selectContainer.append(selectedBox.selectedOption, optionList);
+    selectContainer.value = val;
+    addClickHandler(selectContainer, selectedBox.downCaret, selectedBox.upCaret, optionList, settings.displayImg);
 
     if (settings.replace) {
         selectElt.parentNode.replaceChild(selectContainer, selectElt);
@@ -61,16 +44,14 @@ export function transform(selectElt, settings) {
     return selectContainer;
 }
 
-function createOption(elt) {
+function createOption(elt, selected, displayImg) {
     const a = document.createElement("A");
-    a.setAttribute("class", "option");
+    a.className = "option";
     const input = document.createElement("INPUT");
     input.type = "hidden";
-    if (elt.hasAttribute("value")) {
-        input.value = elt.value;
-    }
+    input.value = elt.hasAttribute("value") ? elt.value : elt.innerHTML;
     const img = document.createElement("IMG");
-    img.setAttribute("class", "option-img");
+    img.className = "option-img";
     if (elt.hasAttribute("option-img")) {
         img.src = elt.getAttribute("option-img");
         if (elt.hasAttribute("option-width") && elt.hasAttribute("option-height")) {
@@ -79,12 +60,47 @@ function createOption(elt) {
         }
     }
     const label = document.createElement("LABEL");
-    label.setAttribute("class", "option-name");
+    label.className = "option-name";
     label.innerHTML = elt.innerHTML;
-    a.append(input, img, label);
+
+    if (!selected) {
+        a.append(input);
+    }
+    if (displayImg) {
+        a.append(img);
+    }
+    a.append(label);
+
     return a;
 }
 
+
+function createSelectDisplay(selectElt, selected, val) {
+    const selectedOption = document.createElement("DIV");
+    selectedOption.className = "select-display";
+    selectedOption.style.width = selectElt.style.width;
+    
+    // const input = document.createElement("INPUT");
+    // input.type = "hidden";
+    // input.value = val;
+    selected.className = "selected-option";
+    selectedOption.append(selected);
+    
+    const span1 = document.createElement("SPAN");
+    span1.className = "select-caret-icon";
+    span1.innerHTML = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1.5">\n' + 
+                      '<path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>\n'
+                      '</svg>';
+    const span2 = document.createElement("SPAN");
+    span2.className = "select-caret-icon";
+    span2.style.display = "none";
+    span2.innerHTML = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-up" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1.5">\n' + 
+                      '<path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>\n'
+                      '</svg>';
+    selectedOption.append(span1, span2);
+
+    return { selectedOption: selectedOption, downCaret: span1, upCaret: span2 };
+}
 
 function addClickHandler(container, expand, hide, list, displayImg) {
     container.addEventListener("click", (event) => {
@@ -94,15 +110,18 @@ function addClickHandler(container, expand, hide, list, displayImg) {
 
         const target = event.target.closest(".option");
         if (target != null) {
-            const temp = target.cloneNode(true);
-            temp.setAttribute("class", "selected-option");
-            if (!displayImg) {
-                temp.removeChild(temp.childNodes[1]);
+            const selected = container.querySelector(".select-display");
+            const val = target.querySelector("input").value;
+            if (container.value != val) {
+                container.value = val;
+                container.dispatchEvent(new Event("input"));
             }
-            const parent = container.querySelector(".select-display");
-            parent.replaceChild(temp, parent.firstChild);
+            selected.querySelector("label").innerHTML = target.querySelector("label").innerHTML;
+            if (displayImg) {
+                selected.querySelector("img").src = target.querySelector("img").src;
+            }
+            container.querySelector("li > .selected").classList.toggle("selected");
             target.classList.toggle("selected");
-            target.parentNode.querySelector(".selected").classList.toggle("selected");
         }
     });
 
