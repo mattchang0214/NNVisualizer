@@ -1,12 +1,16 @@
 import { constants } from "./constants.js";
 import * as selectTransform from "./selectTransform.js";
 
-export function initContainer(d3Container) {
-    d3Container.append("g")
+// TODO:
+// Tooltip for chart
+// Print out a few right/wrong examples
+
+export function initContainer(d3Selection) {
+    d3Selection.append("g")
                .attr("class", "edges");
-    d3Container.append("g")
-               .attr("class", "helperEdges");
-    d3Container.append("g")
+    d3Selection.append("g")
+               .attr("class", "overlayEdges");
+    d3Selection.append("g")
                .attr("class", "nodes");
 }
 
@@ -23,8 +27,8 @@ export function getModelWeights(model) {
 /**
  * Draw nodes and links of the network.
  */
-function drawNetwork(d3Containers, networkData, model) {
-    // create generator for cubic Bezier curves
+function drawNetwork(d3Selections, networkData, model) {
+    // create link generator for smooth cubic Bezier curves
     const curveGenerator = d3.linkHorizontal()
                              .source((d) => [networkData.nodes[d.source][d.srcIdx].x + constants.RADIUS, networkData.nodes[d.source][d.srcIdx].y])      
                              .target((d) => [networkData.nodes[d.target][d.tarIdx].x - constants.RADIUS, networkData.nodes[d.target][d.tarIdx].y]);
@@ -32,7 +36,7 @@ function drawNetwork(d3Containers, networkData, model) {
     // get intial weights
     const weightVals = getModelWeights(model);
     // draw edges
-    d3Containers.svgEdges
+    d3Selections.svgEdges
                 .data(networkData.edges)
                 .join((enter) => enter.append("path"))
                 .attr("id", (d, i) => i)
@@ -43,8 +47,8 @@ function drawNetwork(d3Containers, networkData, model) {
                 .style("stroke-width", (d, i) => Math.min(Math.abs(weightVals[i])*5, 10))
                 .style("stroke-dasharray", ("8, 1"));
 
-    // draw invisible hover helper edges
-    d3Containers.helperEdges
+    // draw invisible overlay edges for hover event
+    d3Selections.overlayEdges
                 .data(networkData.edges)
                 .join((enter) => enter.append("path"))
                 .attr("id", (d, i) => i)
@@ -54,21 +58,20 @@ function drawNetwork(d3Containers, networkData, model) {
                 .style("stroke-width", 10)
                 .attr("pointer-events", "stroke")
                 .on("mouseover", (d) => {
-                    d3Containers.tooltip.style("display", "block");
-                    d3Containers.tooltip.transition().duration(200).style("opacity", 0.9);
-                    d3Containers.tooltip.html("Weight value: <br>" + Math.trunc(weightVals[d3.event.target.id]*1000)/1000)
+                    d3Selections.tooltip.style("display", "block");
+                    d3Selections.tooltip.transition().duration(200).style("opacity", 0.9);
+                    d3Selections.tooltip.html("Weight value: <br>" + Math.trunc(weightVals[d3.event.target.id]*1000)/1000)
                                 .style("top", (d3.event.pageY + 7) + "px")
                                 .style("left", (d3.event.pageX + 15) + "px");
 
               })
               .on("mouseout", (d) => {
-                 d3Containers.tooltip.transition().duration(500).style("opacity", 0);
-                 d3Containers.tooltip.style.display = "none";
+                 d3Selections.tooltip.transition().duration(500).style("opacity", 0);
               });
 
     const layers = [];
     layers.push(networkData.network.inputLayer, ...networkData.network.hiddenLayers, networkData.network.outputLayer);
-    d3Containers.svgNodes
+    d3Selections.svgNodes
                 .selectAll("g")
                 .data(layers)
                 .join((enter) => enter.append("g"))
@@ -76,7 +79,7 @@ function drawNetwork(d3Containers, networkData, model) {
 
     // draw nodes for each layer
     for (const layer of layers) {
-        d3Containers.svgNodes
+        d3Selections.svgNodes
                     .select("g#" + layer.name)
                     .selectAll("circle")
                     .data(networkData.nodes[layer.name])
@@ -91,18 +94,18 @@ function drawNetwork(d3Containers, networkData, model) {
     }
 }
 
-export function updateEdgeWeights(d3Containers, weightVals) {
-    d3Containers.svgEdges.style("stroke", (d, i) => weightVals[i] > 0 ? "rgb(75, 167, 242)": "rgb(245, 170, 71)")
+export function updateEdgeWeights(d3Selections, weightVals) {
+    d3Selections.svgEdges.style("stroke", (d, i) => weightVals[i] > 0 ? "rgb(75, 167, 242)": "rgb(245, 170, 71)")
                          .style("stroke-width", (d, i) => Math.abs(weightVals[i])*5);
     // display tooltip showing weight value
-    d3Containers.helperEdges.attr("pointer-events", "stroke")
-                            .on("mouseover", (d) => {
-                                d3Containers.tooltip.style("display", "block");
-                                d3Containers.tooltip.transition().duration(200).style("opacity", 0.9);
-                                d3Containers.tooltip.html("Weight value: <br>" + Math.trunc(weightVals[d3.event.target.id]*1000)/1000)
-                                            .style("top", (d3.event.pageY + 7) + "px")
-                                            .style("left", (d3.event.pageX + 15) + "px");
-                               });
+    d3Selections.overlayEdges.attr("pointer-events", "stroke")
+                             .on("mouseover", (d) => {
+                                 d3Selections.tooltip.style("display", "block");
+                                 d3Selections.tooltip.transition().duration(200).style("opacity", 0.9);
+                                 d3Selections.tooltip.html("Weight value: <br>" + Math.trunc(weightVals[d3.event.target.id]*1000)/1000)
+                                             .style("top", (d3.event.pageY + 7) + "px")
+                                             .style("left", (d3.event.pageX + 15) + "px");
+                                });
 }
 
 function addNodeControls(htmlElt, network) {
@@ -180,113 +183,105 @@ export function addActivationSelection(network) {
     }
 }
 
-export function addCharts(d3Containers) {
-    /*for (const chart of Object.values(d3Containers)) {
-        const container = chart.append("svg")
+export function addCharts(chartInfo) {
+    const margin = {top: 10, right: 10, bottom: 30, left: 50};
+    for (const chart of chartInfo) {
+        const container = chart.d3Selection
+                               .append("svg")
                                .attr("width", constants.CHART_WIDTH)
                                .attr("height", constants.CHART_HEIGHT);
 
         const x = d3.scaleLinear()
-                .domain([0, 1])
-                .rangeRound([50, constants.CHART_WIDTH - 10]);
+                .domain(chart.domainX)
+                .rangeRound([margin.left, constants.CHART_WIDTH - margin.right]);
         const y = d3.scaleLinear()
-                    .domain([0, 1])
-                    .rangeRound([constants.CHART_HEIGHT - 35, 10]);
+                    .domain(chart.domainY)
+                    .rangeRound([constants.CHART_HEIGHT - margin.bottom, margin.top]);
         container.append("g")
                  .attr("class","x-axis")
-                 .attr("transform", "translate(0," + (constants.CHART_HEIGHT - 35) + ")")
-                 .call(d3.axisBottom(x).tickSize(3).tickValues(d3.range(0, 2, 1)).tickFormat(d3.format(".0f")));
+                 .attr("transform", "translate(0, " + (constants.CHART_HEIGHT - margin.bottom) + ")")
+                 .call(d3.axisBottom(x).tickValues(chart.ticksX).tickSize(3).tickFormat(d3.format(".0f")));
         container.append("g")
                  .attr("class", "y-axis")
-                 .attr("transform", "translate(50, 0)")
-                 .call(d3.axisLeft(y).tickValues(d3.range(0, 1.1, 0.25)).tickSize(3));
+                 .attr("transform", "translate(" + margin.left + ", 0)")
+                 .call(d3.axisLeft(y).tickValues(chart.ticksY).tickSize(3).tickFormat(d3.format(".2f")));
         container.append("text")             
-                 .attr("transform", "translate(" + (constants.CHART_WIDTH/2 + 30) + " ," + 
+                 .attr("transform", "translate(" + (constants.CHART_WIDTH/2 + 30) + ", " + 
                                         (constants.CHART_HEIGHT - 3) + ")")
                  .style("text-anchor", "middle")
-                 .text("epoch");
+                 .text(chart.labelX);
         container.append("text")
-                 .attr("transform", "rotate(-90)")
-                 .attr("y", 1)
-                 .attr("x", -(constants.CHART_HEIGHT / 2)+10)
-                 .attr("dy", "1em")
+                 .attr("transform", "rotate(-90) translate(" + (-constants.CHART_HEIGHT/2 + 10) + ", 15)")
                  .style("text-anchor", "middle")
-                 .text("accuracy");
+                 .text(chart.labelY);
         container.append("g")
                  .attr("class", "data");
-    }*/
-    const accContainer = d3Containers.accChart
-                                     .append("svg")
-                                     .attr("width", constants.CHART_WIDTH)
-                                     .attr("height", constants.CHART_HEIGHT);
-                                     
-    const x = d3.scaleLinear()
-                .domain([0, 1])
-                .rangeRound([50, constants.CHART_WIDTH - 10]);
-    const y = d3.scaleLinear()
-                .domain([0, 1])
-                .rangeRound([constants.CHART_HEIGHT - 35, 10]);
-    accContainer.append("g")
-                .attr("class","x-axis")
-                .attr("transform", "translate(0," + (constants.CHART_HEIGHT - 35) + ")")
-                .call(d3.axisBottom(x).tickSize(3).tickValues(d3.range(0, 2, 1)).tickFormat(d3.format(".0f")));
-    accContainer.append("g")
-                .attr("class", "y-axis")
-                .attr("transform", "translate(50, 0)")
-                .call(d3.axisLeft(y).tickValues(d3.range(0, 1.1, 0.25)).tickSize(3));
-    accContainer.append("text")             
-                .attr("transform", "translate(" + (constants.CHART_WIDTH/2 + 30) + " ," + 
-                                       (constants.CHART_HEIGHT - 3) + ")")
-                .style("text-anchor", "middle")
-                .text("epoch");
-    accContainer.append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 1)
-                .attr("x", -(constants.CHART_HEIGHT / 2)+10)
-                .attr("dy", "1em")
-                .style("text-anchor", "middle")
-                .text("accuracy");
-    accContainer.append("g")
-                .attr("class", "data");
+        container.append("g")
+                 .attr("class", "legend")
+                 .attr("transform","translate(" + (margin.left+10) + ", " + (margin.top+5) + ")")
+                 .call(legend, [{color: chart.colors[0], text: "training"}, {color: chart.colors[1], text: "validation"}]);
+        container.append("rect")
+                 .attr("class", "overlayChart")
+                 .attr("x", margin.left)
+                 .attr("y", margin.top)
+                 .attr("width", constants.CHART_WIDTH - margin.left - margin.right)
+                 .attr("height", constants.CHART_HEIGHT - margin.top - margin.bottom)
+                 .style("fill", "none")
+                 .style("stroke", "none");
+        /*const hoverElts = container.append("g")
+                                   .attr("class", "hoverElts");
+        hoverElts.append("line")
+                 .attr("class", "hoverLine")
+                 .attr("y1", margin.top)
+                 .attr("y2", margin.bottom)
+                 .style("stroke", "#999")
+                 .style("stroke-width", 1)
+                 .style("shape-rendering", "crispEdges")
+                 .style("opacity", 0.5);
 
-    const lossContainer = d3Containers.lossChart
-                                      .append("svg")
-                                      .attr("width", constants.CHART_WIDTH)
-                                      .attr("height", constants.CHART_HEIGHT);
-    lossContainer.append("g")
-                 .attr("class","x-axis")
-                 .attr("transform", "translate(0," + (constants.CHART_HEIGHT - 35) + ")")
-                 .call(d3.axisBottom(x).tickSize(3).tickValues(d3.range(0, 2, 1)).tickFormat(d3.format(".0f")));
-    lossContainer.append("g")
-                 .attr("class", "y-axis")
-                 .attr("transform", "translate(50, 0)")
-                 .call(d3.axisLeft(y).tickValues(d3.range(0, 2.1, 0.5)).tickSize(3));
-    lossContainer.append("text")             
-                 .attr("transform", "translate(" + (constants.CHART_WIDTH/2 + 30) + " ," + 
-                                        (constants.CHART_HEIGHT - 3) + ")")
-                 .style("text-anchor", "middle")
-                 .text("epoch");
-    lossContainer.append("text")
-                 .attr("transform", "rotate(-90)")
-                 .attr("y", 1)
-                 .attr("x", -(constants.CHART_HEIGHT / 2)+10)
-                 .attr("dy", "1em")
-                 .style("text-anchor", "middle")
-                 .text("loss");
-    lossContainer.append("g")
-                 .attr("class", "data");
+        hoverElts.data(chart.colors)
+                 .join((enter) => enter.append("circle"))
+                 .attr("class", "hoverPoints")
+                 .attr("r", 2)
+                 .style("stroke", "none")
+                 .style("fill", (d) => d)
+                 .style("opacity", 0.5);*/
 
-    return {x: x, y: y};
+        chart.axes.x = x;
+        chart.axes.y = y;
+    }
 }
 
-export function updateChart(d3Container, lineGenerator, data, colors, scales) {
-    updatePaths(d3Container, lineGenerator, data, colors);
-    updateDomain(scales, data);
-    updateAxes(d3Container, data, scales);
+function legend(d3Selection, entries) {
+    let idx = 0;
+    for (const entry of entries) {
+        const label = d3Selection.append("g").attr("class", "label").attr("transform", "translate(0," + (idx++)*17 + ")");
+        label.append("line")
+             .attr("x1", 0)
+             .attr("y1", 0)
+             .attr("x2", 25)
+             .attr("y2", 0)
+             .attr("fill", "none")
+             .attr("stroke", entry.color)
+             .attr("stroke-width", 1.5);
+        label.append("text")
+             .text(entry.text)
+             .attr("transform", "translate(30, 4)")
+             .style("text-shadow", "-2px -2px 2px #fff, 2px -2px 2px #fff, -2px 2px 2px #fff, 2px 2px 2px #fff");
+    }
 }
 
-function updatePaths(d3Container, lineGenerator, data, colors) {
-    d3Container.select("g.data")
+export function updateChart(d3Selection, axes, data, colors) {
+    updatePaths(d3Selection, d3.line()
+                               .curve(d3.curveMonotoneX)
+                               .x((d) => axes.x(d.epoch))
+                               .y((d) => axes.y(d.value)), data, colors);
+    updateDomain(axes, data);
+    updateAxes(d3Selection, axes, data);
+}
+
+function updatePaths(d3Selection, lineGenerator, data, colors) {
+    d3Selection.select("g.data")
                .selectAll("path")
                .data(data)
                .join((enter) => enter.append("path"))
@@ -296,28 +291,28 @@ function updatePaths(d3Container, lineGenerator, data, colors) {
                .attr("stroke-width", 1.5);
 }
 
-function updateDomain(scales, data) {
+function updateDomain(axes, data) {
+    axes.x.domain([0, data[0].length]);
     // dataMax = d3.max(yData);
-    scales.x.domain([0, data[0].length]);
     // y.domain([0, dataMax]);
 }
 
-function updateAxes(d3Container, data, scales) {
-    d3Container.select("g.x-axis").call(d3.axisBottom(scales.x).tickValues(getXTickVals(data[0])).tickSize(3).tickFormat(d3.format(".0f")));
-    // d3Container.select("g.y-axis").call(d3.axisLeft(scales.y).tickValues(d3.range(0, 2, 0.5)).tickSize(3));
+function updateAxes(d3Selection, axes, data) {
+    d3Selection.select("g.x-axis").call(d3.axisBottom(axes.x).tickValues(getXTickVals(data[0].length)).tickSize(3).tickFormat(d3.format(".0f")));
+    // d3Selection.select("g.y-axis").call(d3.axisLeft(axes.y).tickValues(d3.range(0, 2, 0.5)).tickSize(3));
 }
 
-function getXTickVals(data) {
-    return d3.range(0, data.length+1, Math.trunc(data.length/10)+((data.length%10!=0)|0));
+function getXTickVals(length) {
+    return d3.range(0, length+1, Math.trunc(length/10)+((length%10!=0)|0));
 }
 
-export function clearCharts(d3Container) {
-    d3Container.selectAll("g.data").remove();
+export function clearCharts(d3Selection) {
+    d3Selection.selectAll("g.data > path").remove();
 }
 
 
-export function update(d3Containers, htmlElts, networkData, model) {
-    drawNetwork(d3Containers, networkData, model);
+export function update(d3Selections, htmlElts, networkData, model) {
+    drawNetwork(d3Selections, networkData, model);
 
     htmlElts.pauseIcon.style.display = "none";
     htmlElts.slider.disabled = true;

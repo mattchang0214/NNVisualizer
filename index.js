@@ -33,13 +33,9 @@ function createModel(network) {
     return model;
 }
 
-async function trainModel(model, dataset, scales) {
+async function trainModel(model, dataset, chartInfo) {
     const BATCH_SIZE = 32;
-
     const pastWeights = [];
-    const accLogs = [[], []];
-    const lossLogs = [[], []];
-    const colors = ["steelblue", "firebrick"];
     
     const epochNum = document.querySelector("#epoch");
     const epochSlider = document.querySelector("#epoch-slider");
@@ -63,37 +59,23 @@ async function trainModel(model, dataset, scales) {
 
                 const weightVals = ui.getModelWeights(model);
                 pastWeights.push(weightVals);
-                accLogs[0].push({epoch: epoch+1, value: logs.acc});
-                accLogs[1].push({epoch: epoch+1, value: logs.val_acc});
-                lossLogs[0].push({epoch: epoch+1, value: logs.loss});
-                lossLogs[1].push({epoch: epoch+1, value: logs.val_loss});
-                
+
                 ui.updateEdgeWeights({ 
                                        svgEdges: d3.select(".edges").selectAll("path"),
-                                       helperEdges: d3.select(".helperEdges").selectAll("path"), 
+                                       overlayEdges: d3.select(".overlayEdges").selectAll("path"), 
                                        tooltip: d3.select("#tooltip")
                                      }, weightVals);
 
                 // Plot the loss and accuracy values at the end of every training epoch
-                ui.updateChart(d3.select("#acc-chart > svg"), 
-                               d3.line()
-                                 .curve(d3.curveMonotoneX)
-                                 .x((d) => scales.x(d.epoch))
-                                 .y((d) => scales.y(d.value)), 
-                               accLogs, colors, scales
-                               );
-
-                ui.updateChart(d3.select("#loss-chart > svg"), 
-                               d3.line()
-                                 .curve(d3.curveMonotoneX)
-                                 .x((d) => scales.x(d.epoch))
-                                 .y((d) => scales.y(d.value)), 
-                               lossLogs, colors, scales
-                               );
+                for (const chart of chartInfo) {
+                    chart.data[0].push({epoch: epoch+1, value: logs[chart.type]});
+                    chart.data[1].push({epoch: epoch+1, value: logs["val_" + chart.type]});
+                    ui.updateChart(chart.d3Selection.select("svg"), chart.axes, chart.data, chart.colors);
+                }
             },
         }
     });
-    console.log(accLogs);
+
     epochSlider.disabled = false;
     return pastWeights;
 }
@@ -104,7 +86,7 @@ function updateNetwork(svgContainer, network) {
     const model = createModel(network);
     ui.update({ 
                   svgEdges: svgContainer.select(".edges").selectAll("path"),
-                  helperEdges: svgContainer.select(".helperEdges").selectAll("path"),
+                  overlayEdges: svgContainer.select(".overlayEdges").selectAll("path"),
                   svgNodes: svgContainer.select(".nodes"),
                   tooltip: d3.select("#tooltip")
               }, 
@@ -126,6 +108,7 @@ function updateNetwork(svgContainer, network) {
 
 function interruptTraining() {
     stopRequested = true;
+    ui.clearCharts(d3.selectAll(".chart > svg"));
     document.querySelector("#epoch").innerHTML = "Epoch: 0";
 }
 
@@ -148,6 +131,9 @@ const svgContainer = d3.select("#network")
                        .append("svg")
                        .attr("width", constants.NETWORK_WIDTH)
                        .attr("height", constants.NETWORK_HEIGHT);
+/*const svgContainer = d3.select("#network")
+                       .append("svg")
+                       .attr("viewBox", "0 0 " + constants.NETWORK_WIDTH + " " + constants.NETWORK_HEIGHT);*/
 ui.initContainer(svgContainer);
 
 const networkLayers = neuralNet.getDefaultNetwork();
@@ -157,21 +143,46 @@ let pastWeights = [];
 
 document.querySelector("#num-epochs-input").value = constants.DEFAULT_EPOCHS;
 ui.addActivationSelection(networkLayers);
-const scales = ui.addCharts({
-                                accChart: d3.select("#acc-chart"),
-                                lossChart: d3.select("#loss-chart")
-                            });
+const chartInfo = [
+                      { 
+                          d3Selection: d3.select("#acc-chart"),
+                          domainX: [0, 1],
+                          domainY: [0, 1],
+                          ticksX: d3.range(0, 2, 1),
+                          ticksY: d3.range(0, 1.1, 0.25),
+                          labelX: "epoch",
+                          labelY: "accuracy",
+                          colors: ["steelblue", "firebrick"],
+                          type: "acc",
+                          axes: {x: null, y: null},
+                          data: [[], []]
+                      },
+                      { 
+                          d3Selection: d3.select("#loss-chart"),
+                          domainX: [0, 1],
+                          domainY: [0, 1.5],
+                          ticksX: d3.range(0, 2, 1),
+                          ticksY: d3.range(0, 1.6, 0.5),
+                          labelX: "epoch",
+                          labelY: "loss",
+                          colors: ["steelblue", "firebrick"],
+                          type: "loss",
+                          axes: {x: null, y: null},
+                          data: [[], []]
+                      }
+                  ];
+ui.addCharts(chartInfo);
 
 
 /***EVENT HANDLERS***/
 document.querySelector("#train-btn")
-        .addEventListener("click", async (event) => {
+        .addEventListener("click", async () => {
             stopRequested = false;
-            pastWeights = await trainModel(tfModel, dataset, scales);
+            pastWeights = await trainModel(tfModel, dataset, chartInfo);
         }, { once: true });
 
 document.querySelector("#reset-btn")
-        .addEventListener("click", (event) => {
+        .addEventListener("click", () => {
             interruptTraining();
             ui.clearCharts(d3.selectAll(".chart > svg"));
             tfModel = updateNetwork(svgContainer, networkLayers);
@@ -187,7 +198,7 @@ document.querySelector("#epoch-slider")
 
             ui.updateEdgeWeights({ 
                                    svgEdges: svgContainer.select(".edges").selectAll("path"),
-                                   helperEdges: svgContainer.select(".helperEdges").selectAll("path"), 
+                                   overlayEdges: svgContainer.select(".overlayEdges").selectAll("path"), 
                                    tooltip: d3.select("#tooltip"),
                                  }, weightVals);
 
@@ -201,7 +212,7 @@ document.querySelector("#num-epochs-input")
         });
 
 document.querySelector("#add-layer-btn")
-        .addEventListener("click", (event) => {
+        .addEventListener("click", () => {
             if (networkLayers.hiddenLayers.length > 5) {
                 return;
             }
@@ -211,7 +222,7 @@ document.querySelector("#add-layer-btn")
         });
 
 document.querySelector("#remove-layer-btn")
-        .addEventListener("click", (event) => {
+        .addEventListener("click", () => {
             if (networkLayers.hiddenLayers.length < 1) {
                 return;
             }
@@ -256,6 +267,6 @@ document.querySelector("#activation-controls > #output > .select-container")
         });
 
 document.querySelector("#advanced-controls")
-        .addEventListener("click", (event) => {
+        .addEventListener("click", () => {
             alert("Under construction...");
         });
