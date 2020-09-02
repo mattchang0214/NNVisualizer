@@ -114,7 +114,7 @@ function addClickHandler(container, expand, hide, list, displayImg) {
             const val = target.querySelector("input").value;
             if (container.value != val) {
                 container.value = val;
-                container.dispatchEvent(new Event("input"));
+                container.dispatchEvent(new InputEvent("input"));
             }
             selected.querySelector("label").innerHTML = target.querySelector("label").innerHTML;
             if (displayImg) {

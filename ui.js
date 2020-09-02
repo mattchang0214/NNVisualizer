@@ -4,6 +4,7 @@ import * as selectTransform from "./selectTransform.js";
 // TODO:
 // Tooltip for chart
 // Print out a few right/wrong examples
+// Fix node control buttons
 
 export function initContainer(d3Selection) {
     d3Selection.append("g")
@@ -56,18 +57,18 @@ function drawNetwork(d3Selections, networkData, model) {
                 .style("fill", "none")
                 .style("stroke", "none")
                 .style("stroke-width", 10)
-                .attr("pointer-events", "stroke")
-                .on("mouseover", (d) => {
+                .style("pointer-events", "stroke")
+                .on("mouseover", (event) => {
                     d3Selections.tooltip.style("display", "block");
                     d3Selections.tooltip.transition().duration(200).style("opacity", 0.9);
-                    d3Selections.tooltip.html("Weight value: <br>" + Math.trunc(weightVals[d3.event.target.id]*1000)/1000)
-                                .style("top", (d3.event.pageY + 7) + "px")
-                                .style("left", (d3.event.pageX + 15) + "px");
+                    d3Selections.tooltip.html("Weight value: <br>" + Math.trunc(weightVals[event.target.id]*1000)/1000)
+                                .style("top", (event.pageY + 7) + "px")
+                                .style("left", (event.pageX + 15) + "px");
 
-              })
-              .on("mouseout", (d) => {
-                 d3Selections.tooltip.transition().duration(500).style("opacity", 0);
-              });
+                })
+                .on("mouseout", () => {
+                     d3Selections.tooltip.transition().duration(500).style("opacity", 0);
+                });
 
     const layers = [];
     layers.push(networkData.network.inputLayer, ...networkData.network.hiddenLayers, networkData.network.outputLayer);
@@ -98,13 +99,13 @@ export function updateEdgeWeights(d3Selections, weightVals) {
     d3Selections.svgEdges.style("stroke", (d, i) => weightVals[i] > 0 ? "rgb(75, 167, 242)": "rgb(245, 170, 71)")
                          .style("stroke-width", (d, i) => Math.abs(weightVals[i])*5);
     // display tooltip showing weight value
-    d3Selections.overlayEdges.attr("pointer-events", "stroke")
-                             .on("mouseover", (d) => {
+    d3Selections.overlayEdges.style("pointer-events", "stroke")
+                             .on("mouseover", (event) => {
                                  d3Selections.tooltip.style("display", "block");
                                  d3Selections.tooltip.transition().duration(200).style("opacity", 0.9);
-                                 d3Selections.tooltip.html("Weight value: <br>" + Math.trunc(weightVals[d3.event.target.id]*1000)/1000)
-                                             .style("top", (d3.event.pageY + 7) + "px")
-                                             .style("left", (d3.event.pageX + 15) + "px");
+                                 d3Selections.tooltip.html("Weight value: <br>" + Math.trunc(weightVals[event.target.id]*1000)/1000)
+                                             .style("top", (event.pageY + 7) + "px")
+                                             .style("left", (event.pageX + 15) + "px");
                                 });
 }
 
@@ -188,8 +189,7 @@ export function addCharts(chartInfo) {
     for (const chart of chartInfo) {
         const container = chart.d3Selection
                                .append("svg")
-                               .attr("width", constants.CHART_WIDTH)
-                               .attr("height", constants.CHART_HEIGHT);
+                               .attr("viewBox", "0 0 " + constants.CHART_WIDTH + " " + constants.CHART_HEIGHT);
 
         const x = d3.scaleLinear()
                 .domain(chart.domainX)
@@ -219,33 +219,19 @@ export function addCharts(chartInfo) {
         container.append("g")
                  .attr("class", "legend")
                  .attr("transform","translate(" + (margin.left+10) + ", " + (margin.top+5) + ")")
-                 .call(legend, [{color: chart.colors[0], text: "training"}, {color: chart.colors[1], text: "validation"}]);
-        container.append("rect")
+                 .call(legend, chart.legend);
+        /*container.append("rect")
                  .attr("class", "overlayChart")
                  .attr("x", margin.left)
                  .attr("y", margin.top)
                  .attr("width", constants.CHART_WIDTH - margin.left - margin.right)
                  .attr("height", constants.CHART_HEIGHT - margin.top - margin.bottom)
                  .style("fill", "none")
-                 .style("stroke", "none");
-        /*const hoverElts = container.append("g")
-                                   .attr("class", "hoverElts");
-        hoverElts.append("line")
-                 .attr("class", "hoverLine")
-                 .attr("y1", margin.top)
-                 .attr("y2", margin.bottom)
-                 .style("stroke", "#999")
-                 .style("stroke-width", 1)
-                 .style("shape-rendering", "crispEdges")
-                 .style("opacity", 0.5);
-
-        hoverElts.data(chart.colors)
-                 .join((enter) => enter.append("circle"))
-                 .attr("class", "hoverPoints")
-                 .attr("r", 2)
                  .style("stroke", "none")
-                 .style("fill", (d) => d)
-                 .style("opacity", 0.5);*/
+                 .style("pointer-events", "fill");
+
+        addHover(container, chart.legend, margin);
+        updateHover(container);*/
 
         chart.axes.x = x;
         chart.axes.y = y;
@@ -271,24 +257,45 @@ function legend(d3Selection, entries) {
     }
 }
 
-export function updateChart(d3Selection, axes, data, colors) {
+/*function addHover(d3Selection, legend, margin) {
+    const hoverElts = d3Selection.append("g").attr("class", "hoverElts");
+
+    hoverElts.append("text")
+             .attr("transform", "translate(" + (margin.left+10) + ", " + (constants.CHART_HEIGHT - margin.bottom - 5 - (legend.length)*12) + ")")
+             .text("epoch: 20");
+
+    for (const idx in legend) {
+        hoverElts.append("text")
+                 .attr("transform", "translate(" + (margin.left+10) + ", " + (constants.CHART_HEIGHT - margin.bottom - 5 - (legend.length-1-idx)*12) + ")").text("epoch: 20");
+    }
+
+    hoverElts.append("line")
+             .attr("class", "hoverLine")
+             .attr("y1", margin.top)
+             .attr("y2", constants.CHART_HEIGHT - margin.bottom)
+             .style("stroke", "#999")
+             .style("stroke-width", 1.5)
+             .style("shape-rendering", "crispEdges")
+             .style("opacity", 0.65);
+
+    hoverElts.selectAll("circle")
+             .data(legend)
+             .join((enter) => enter.append("circle"))
+             .attr("class", "hoverPoints")
+             .attr("r", 5)
+             .style("stroke", "none")
+             .style("fill", (d) => d.color)
+             .style("opacity", 0.65);
+}*/
+
+export function updateChart(d3Selection, axes, data, legend) {
+    updateDomain(axes, data);
+    updateAxes(d3Selection, axes, data);
     updatePaths(d3Selection, d3.line()
                                .curve(d3.curveMonotoneX)
                                .x((d) => axes.x(d.epoch))
-                               .y((d) => axes.y(d.value)), data, colors);
-    updateDomain(axes, data);
-    updateAxes(d3Selection, axes, data);
-}
-
-function updatePaths(d3Selection, lineGenerator, data, colors) {
-    d3Selection.select("g.data")
-               .selectAll("path")
-               .data(data)
-               .join((enter) => enter.append("path"))
-               .attr("d", lineGenerator)
-               .attr("fill", "none")
-               .attr("stroke", (d, idx) => colors[idx])
-               .attr("stroke-width", 1.5);
+                               .y((d) => axes.y(d.value)), data, legend);
+    // updateHover(d3Selection);
 }
 
 function updateDomain(axes, data) {
@@ -305,6 +312,29 @@ function updateAxes(d3Selection, axes, data) {
 function getXTickVals(length) {
     return d3.range(0, length+1, Math.trunc(length/10)+((length%10!=0)|0));
 }
+
+function updatePaths(d3Selection, lineGenerator, data, legend) {
+    d3Selection.select("g.data")
+               .selectAll("path")
+               .data(data)
+               .join((enter) => enter.append("path"))
+               .attr("d", lineGenerator)
+               .attr("fill", "none")
+               .attr("stroke", (d, idx) => legend[idx].color)
+               .attr("stroke-width", 1.5);
+}
+
+/*function updateHover(d3Selection) {
+    const hoverElts = d3Selection.select(".hoverElts");
+
+    d3Selection.select("rect.overlayChart")
+               .on("mouseover", (event) => {
+                   console.log(d3.pointer(event, d3Selection));
+               })
+               .on("mouseout", () => {
+                   hoverElts.style("display", "none");
+               });
+}*/
 
 export function clearCharts(d3Selection) {
     d3Selection.selectAll("g.data > path").remove();

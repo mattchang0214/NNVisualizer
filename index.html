@@ -5,7 +5,7 @@
   <link rel="stylesheet" type="text/css" href="style.css">
   <link rel="stylesheet" type="text/css" href="select.css">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600&display=swap" rel="stylesheet">
-  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
 </head>
 
@@ -56,9 +56,11 @@
   </div>
   <div id="node-controls"></div>
   <div id="network"></div>
-  <div id="acc-chart" class="chart"></div>
-  <div id="loss-chart" class="chart"></div>
-  <div id="tooltip">Hover me</div>
+  <div id="charts">
+    <div id="acc-chart"></div>
+    <div id="loss-chart"></div>
+  </div>
+  <div id="tooltip"></div>
   <script src="index.js" type="module"></script>
 </body>
 </html> 

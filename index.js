@@ -9,31 +9,31 @@ function createModel(network) {
     const LEARNING_RATE = 0.01;
     
     // create tf model from definition
-    const model = tf.sequential();
+    const tfModel = tf.sequential();
     
     if (network.hasOwnProperty("hiddenLayers") && network.hiddenLayers.length > 0) {
         const hLayers = network.hiddenLayers;
-        model.add(tf.layers.dense({units: hLayers[0].size, activation: hLayers[0].activation, inputShape: [network.inputLayer.size]}));
+        tfModel.add(tf.layers.dense({units: hLayers[0].size, activation: hLayers[0].activation, inputShape: [network.inputLayer.size]}));
         for (let i = 1; i < hLayers.length; i++) {
-            model.add(tf.layers.dense({units: hLayers[i].size, activation: hLayers[i].activation}));
+            tfModel.add(tf.layers.dense({units: hLayers[i].size, activation: hLayers[i].activation}));
         }
-        model.add(tf.layers.dense({units: network.outputLayer.size, activation: network.outputLayer.activation}));
+        tfModel.add(tf.layers.dense({units: network.outputLayer.size, activation: network.outputLayer.activation}));
     }
     else {
-        model.add(tf.layers.dense({units: network.outputLayer.size, activation: network.outputLayer.activation, inputShape: [network.inputLayer.size]}));
+        tfModel.add(tf.layers.dense({units: network.outputLayer.size, activation: network.outputLayer.activation, inputShape: [network.inputLayer.size]}));
     }
-    // model.summary();
+    // tfModel.summary();
 
-    model.compile({
+    tfModel.compile({
         optimizer: tf.train.adam(LEARNING_RATE),
         loss: "categoricalCrossentropy",
         metrics: ["accuracy"],
     });
 
-    return model;
+    return tfModel;
 }
 
-async function trainModel(model, dataset, chartInfo) {
+async function trainModel(dataset) {
     const BATCH_SIZE = 32;
     const pastWeights = [];
     
@@ -61,16 +61,16 @@ async function trainModel(model, dataset, chartInfo) {
                 pastWeights.push(weightVals);
 
                 ui.updateEdgeWeights({ 
-                                       svgEdges: d3.select(".edges").selectAll("path"),
-                                       overlayEdges: d3.select(".overlayEdges").selectAll("path"), 
-                                       tooltip: d3.select("#tooltip")
+                                         svgEdges: svgContainer.select(".edges").selectChildren("path"),
+                                         overlayEdges: svgContainer.select(".overlayEdges").selectChildren("path"), 
+                                         tooltip: d3.select("#tooltip")
                                      }, weightVals);
 
                 // Plot the loss and accuracy values at the end of every training epoch
                 for (const chart of chartInfo) {
                     chart.data[0].push({epoch: epoch+1, value: logs[chart.type]});
                     chart.data[1].push({epoch: epoch+1, value: logs["val_" + chart.type]});
-                    ui.updateChart(chart.d3Selection.select("svg"), chart.axes, chart.data, chart.colors);
+                    ui.updateChart(chart.d3Selection.selectChild("svg"), chart.axes, chart.data, chart.legend);
                 }
             },
         }
@@ -83,11 +83,11 @@ async function trainModel(model, dataset, chartInfo) {
 function updateNetwork(svgContainer, network) {
     const nodes = neuralNet.createLayerNodes(network);
     const edges = neuralNet.createLayerEdges(network);
-    const model = createModel(network);
+    const tfModel = createModel(network);
     ui.update({ 
-                  svgEdges: svgContainer.select(".edges").selectAll("path"),
-                  overlayEdges: svgContainer.select(".overlayEdges").selectAll("path"),
-                  svgNodes: svgContainer.select(".nodes"),
+                  svgEdges: svgContainer.selectChild(".edges").selectChildren("path"),
+                  overlayEdges: svgContainer.selectChild(".overlayEdges").selectChildren("path"),
+                  svgNodes: svgContainer.selectChild(".nodes"),
                   tooltip: d3.select("#tooltip")
               }, 
               {
@@ -101,9 +101,9 @@ function updateNetwork(svgContainer, network) {
                   nodes: nodes,
                   edges: edges
               },
-              model);
+              tfModel);
 
-    return model;
+    return tfModel;
 }
 
 function interruptTraining() {
@@ -129,15 +129,11 @@ const dataset = irisData.data2Tensor();
 // make an SVG Container
 const svgContainer = d3.select("#network")
                        .append("svg")
-                       .attr("width", constants.NETWORK_WIDTH)
-                       .attr("height", constants.NETWORK_HEIGHT);
-/*const svgContainer = d3.select("#network")
-                       .append("svg")
-                       .attr("viewBox", "0 0 " + constants.NETWORK_WIDTH + " " + constants.NETWORK_HEIGHT);*/
+                       .attr("viewBox", "0 0 " + constants.NETWORK_WIDTH + " " + constants.NETWORK_HEIGHT);
 ui.initContainer(svgContainer);
 
 const networkLayers = neuralNet.getDefaultNetwork();
-let tfModel = updateNetwork(svgContainer, networkLayers);
+let model = updateNetwork(svgContainer, networkLayers);
 let stopRequested = false;
 let pastWeights = [];
 
@@ -152,7 +148,7 @@ const chartInfo = [
                           ticksY: d3.range(0, 1.1, 0.25),
                           labelX: "epoch",
                           labelY: "accuracy",
-                          colors: ["steelblue", "firebrick"],
+                          legend: [{color: "steelblue", text: "training"}, {color: "firebrick", text: "validation"}],
                           type: "acc",
                           axes: {x: null, y: null},
                           data: [[], []]
@@ -165,7 +161,7 @@ const chartInfo = [
                           ticksY: d3.range(0, 1.6, 0.5),
                           labelX: "epoch",
                           labelY: "loss",
-                          colors: ["steelblue", "firebrick"],
+                          legend: [{color: "steelblue", text: "training"}, {color: "firebrick", text: "validation"}],
                           type: "loss",
                           axes: {x: null, y: null},
                           data: [[], []]
@@ -178,14 +174,14 @@ ui.addCharts(chartInfo);
 document.querySelector("#train-btn")
         .addEventListener("click", async () => {
             stopRequested = false;
-            pastWeights = await trainModel(tfModel, dataset, chartInfo);
+            pastWeights = await trainModel(dataset);
         }, { once: true });
 
 document.querySelector("#reset-btn")
         .addEventListener("click", () => {
             interruptTraining();
-            ui.clearCharts(d3.selectAll(".chart > svg"));
-            tfModel = updateNetwork(svgContainer, networkLayers);
+            ui.clearCharts(d3.select("#charts").selectAll("svg"));
+            model = updateNetwork(svgContainer, networkLayers);
         });
 
 document.querySelector("#epoch-slider")
@@ -197,9 +193,9 @@ document.querySelector("#epoch-slider")
             const weightVals = pastWeights[event.target.value];
 
             ui.updateEdgeWeights({ 
-                                   svgEdges: svgContainer.select(".edges").selectAll("path"),
-                                   overlayEdges: svgContainer.select(".overlayEdges").selectAll("path"), 
-                                   tooltip: d3.select("#tooltip"),
+                                     svgEdges: svgContainer.selectChild(".edges").selectChildren("path"),
+                                     overlayEdges: svgContainer.selectChild(".overlayEdges").selectChildren("path"), 
+                                     tooltip: d3.select("#tooltip"),
                                  }, weightVals);
 
         });
@@ -208,7 +204,7 @@ document.querySelector("#num-epochs-input")
         .addEventListener("input", (event) => {
             interruptTraining();
             event.target.closest("form").reportValidity();
-            tfModel = updateNetwork(svgContainer, networkLayers);
+            model = updateNetwork(svgContainer, networkLayers);
         });
 
 document.querySelector("#add-layer-btn")
@@ -218,7 +214,7 @@ document.querySelector("#add-layer-btn")
             }
             interruptTraining();
             neuralNet.addHiddenLayer(networkLayers, 4, "relu");
-            tfModel = updateNetwork(svgContainer, networkLayers);
+            model = updateNetwork(svgContainer, networkLayers);
         });
 
 document.querySelector("#remove-layer-btn")
@@ -228,7 +224,7 @@ document.querySelector("#remove-layer-btn")
             }
             interruptTraining();
             neuralNet.removeHiddenLayer(networkLayers);
-            tfModel = updateNetwork(svgContainer, networkLayers);
+            model = updateNetwork(svgContainer, networkLayers);
         });
 
 document.querySelector("#node-controls")
@@ -240,7 +236,7 @@ document.querySelector("#node-controls")
                 }
                 interruptTraining();
                 networkLayers.hiddenLayers[target.value].size++;
-                tfModel = updateNetwork(svgContainer, networkLayers);
+                model = updateNetwork(svgContainer, networkLayers);
             }
             else if (target.className == "remove-node-btn") {
                 if (networkLayers.hiddenLayers[target.value].size < 2) {
@@ -248,7 +244,7 @@ document.querySelector("#node-controls")
                 }
                 interruptTraining();
                 networkLayers.hiddenLayers[target.value].size--;
-                tfModel = updateNetwork(svgContainer, networkLayers);
+                model = updateNetwork(svgContainer, networkLayers);
             }
         });
 
@@ -256,14 +252,14 @@ document.querySelector("#activation-controls > #hidden > .select-container")
         .addEventListener("input", (event) => {
             interruptTraining();
             neuralNet.setHiddenActivations(networkLayers, event.target.value);
-            tfModel = updateNetwork(svgContainer, networkLayers);
+            model = updateNetwork(svgContainer, networkLayers);
         });
 
 document.querySelector("#activation-controls > #output > .select-container")
         .addEventListener("input", (event) => {
             interruptTraining();
             neuralNet.setOutputActivation(networkLayers, event.target.value);
-            tfModel = updateNetwork(svgContainer, networkLayers);
+            model = updateNetwork(svgContainer, networkLayers);
         });
 
 document.querySelector("#advanced-controls")
