@@ -73,7 +73,7 @@ function drawNetwork(d3Selections, networkData, model) {
     const layers = [];
     layers.push(networkData.network.inputLayer, ...networkData.network.hiddenLayers, networkData.network.outputLayer);
     d3Selections.svgNodes
-                .selectAll("g")
+                .selectChildren("g")
                 .data(layers)
                 .join((enter) => enter.append("g"))
                 .attr("id", (d) => d.name);
@@ -81,8 +81,8 @@ function drawNetwork(d3Selections, networkData, model) {
     // draw nodes for each layer
     for (const layer of layers) {
         d3Selections.svgNodes
-                    .select("g#" + layer.name)
-                    .selectAll("circle")
+                    .selectChild("g#" + layer.name)
+                    .selectChildren("circle")
                     .data(networkData.nodes[layer.name])
                     .join((enter) => enter.append("circle"))
                     .attr("id", (d, i) => i)
@@ -278,7 +278,7 @@ function legend(d3Selection, entries) {
              .style("shape-rendering", "crispEdges")
              .style("opacity", 0.65);
 
-    hoverElts.selectAll("circle")
+    hoverElts.selectChildren("circle")
              .data(legend)
              .join((enter) => enter.append("circle"))
              .attr("class", "hoverPoints")
@@ -305,8 +305,8 @@ function updateDomain(axes, data) {
 }
 
 function updateAxes(d3Selection, axes, data) {
-    d3Selection.select("g.x-axis").call(d3.axisBottom(axes.x).tickValues(getXTickVals(data[0].length)).tickSize(3).tickFormat(d3.format(".0f")));
-    // d3Selection.select("g.y-axis").call(d3.axisLeft(axes.y).tickValues(d3.range(0, 2, 0.5)).tickSize(3));
+    d3Selection.selectChild("g.x-axis").call(d3.axisBottom(axes.x).tickValues(getXTickVals(data[0].length)).tickSize(3).tickFormat(d3.format(".0f")));
+    // d3Selection.selectChild("g.y-axis").call(d3.axisLeft(axes.y).tickValues(d3.range(0, 2, 0.5)).tickSize(3));
 }
 
 function getXTickVals(length) {
@@ -314,8 +314,8 @@ function getXTickVals(length) {
 }
 
 function updatePaths(d3Selection, lineGenerator, data, legend) {
-    d3Selection.select("g.data")
-               .selectAll("path")
+    d3Selection.selectChild("g.data")
+               .selectChildren("path")
                .data(data)
                .join((enter) => enter.append("path"))
                .attr("d", lineGenerator)
