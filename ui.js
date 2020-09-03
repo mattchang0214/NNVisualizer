@@ -220,7 +220,12 @@ export function addCharts(chartInfo) {
                  .attr("class", "legend")
                  .attr("transform","translate(" + (margin.left+10) + ", " + (margin.top+5) + ")")
                  .call(legend, chart.legend);
-        /*container.append("rect")
+
+        const hoverElts = container.append("g")
+                                   .attr("class", "hoverElts")
+                                   .call(addHover, chart.legend, margin);
+
+        container.append("rect")
                  .attr("class", "overlayChart")
                  .attr("x", margin.left)
                  .attr("y", margin.top)
@@ -228,10 +233,10 @@ export function addCharts(chartInfo) {
                  .attr("height", constants.CHART_HEIGHT - margin.top - margin.bottom)
                  .style("fill", "none")
                  .style("stroke", "none")
-                 .style("pointer-events", "fill");
-
-        addHover(container, chart.legend, margin);
-        updateHover(container);*/
+                 .style("pointer-events", "fill")
+                 .on("mouseout", () => {
+                     hoverElts.style("display", "none");
+                 });
 
         chart.axes.x = x;
         chart.axes.y = y;
@@ -257,36 +262,32 @@ function legend(d3Selection, entries) {
     }
 }
 
-/*function addHover(d3Selection, legend, margin) {
-    const hoverElts = d3Selection.append("g").attr("class", "hoverElts");
-
-    hoverElts.append("text")
-             .attr("transform", "translate(" + (margin.left+10) + ", " + (constants.CHART_HEIGHT - margin.bottom - 5 - (legend.length)*12) + ")")
-             .text("epoch: 20");
+function addHover(d3Selection, legend, margin) {
+    d3Selection.append("text")
+               .attr("transform", "translate(" + (margin.left+10) + ", " + (constants.CHART_HEIGHT - margin.bottom - 5 - (legend.length)*12) + ")");
 
     for (const idx in legend) {
-        hoverElts.append("text")
-                 .attr("transform", "translate(" + (margin.left+10) + ", " + (constants.CHART_HEIGHT - margin.bottom - 5 - (legend.length-1-idx)*12) + ")").text("epoch: 20");
+        d3Selection.append("text")
+                   .attr("transform", "translate(" + (margin.left+10) + ", " + (constants.CHART_HEIGHT - margin.bottom - 5 - (legend.length-1-idx)*12) + ")");
     }
 
-    hoverElts.append("line")
-             .attr("class", "hoverLine")
-             .attr("y1", margin.top)
-             .attr("y2", constants.CHART_HEIGHT - margin.bottom)
-             .style("stroke", "#999")
-             .style("stroke-width", 1.5)
-             .style("shape-rendering", "crispEdges")
-             .style("opacity", 0.65);
+    d3Selection.append("line")
+               .attr("class", "hoverLine")
+               .attr("y1", margin.top)
+               .attr("y2", constants.CHART_HEIGHT - margin.bottom)
+               .style("stroke", "#999")
+               .style("stroke-width", 1.5)
+               .style("opacity", 0.65);
 
-    hoverElts.selectChildren("circle")
-             .data(legend)
-             .join((enter) => enter.append("circle"))
-             .attr("class", "hoverPoints")
-             .attr("r", 5)
-             .style("stroke", "none")
-             .style("fill", (d) => d.color)
-             .style("opacity", 0.65);
-}*/
+    d3Selection.selectChildren("circle")
+               .data(legend)
+               .join((enter) => enter.append("circle"))
+               .attr("class", "hoverPoints")
+               .attr("r", 4)
+               .style("stroke", "none")
+               .style("fill", (d) => d.color)
+               .style("opacity", 0.65);
+}
 
 export function updateChart(d3Selection, axes, data, legend) {
     updateDomain(axes, data);
@@ -295,18 +296,18 @@ export function updateChart(d3Selection, axes, data, legend) {
                                .curve(d3.curveMonotoneX)
                                .x((d) => axes.x(d.epoch))
                                .y((d) => axes.y(d.value)), data, legend);
-    // updateHover(d3Selection);
+    updateHover(d3Selection, axes, data, legend);
 }
 
 function updateDomain(axes, data) {
     axes.x.domain([0, data[0].length]);
-    // dataMax = d3.max(yData);
+    // dataMax = d3.greatest(yData, (a, b) => a.value - b.value);
     // y.domain([0, dataMax]);
 }
 
 function updateAxes(d3Selection, axes, data) {
-    d3Selection.selectChild("g.x-axis").call(d3.axisBottom(axes.x).tickValues(getXTickVals(data[0].length)).tickSize(3).tickFormat(d3.format(".0f")));
-    // d3Selection.selectChild("g.y-axis").call(d3.axisLeft(axes.y).tickValues(d3.range(0, 2, 0.5)).tickSize(3));
+    d3Selection.selectChild(".x-axis").call(d3.axisBottom(axes.x).tickValues(getXTickVals(data[0].length)).tickSize(3).tickFormat(d3.format(".0f")));
+    // d3Selection.selectChild(".y-axis").call(d3.axisLeft(axes.y).tickValues(d3.range(0, 2, 0.5)).tickSize(3));
 }
 
 function getXTickVals(length) {
@@ -324,17 +325,38 @@ function updatePaths(d3Selection, lineGenerator, data, legend) {
                .attr("stroke-width", 1.5);
 }
 
-/*function updateHover(d3Selection) {
-    const hoverElts = d3Selection.select(".hoverElts");
+function updateHover(d3Selection, axes, data, legend) {
+    const hoverElts = d3Selection.selectChild(".hoverElts");
+    const hoverLine = hoverElts.selectChild(".hoverLine");
+    const hoverPoints = hoverElts.selectChildren(".hoverPoints");
+    const hoverText = hoverElts.selectChildren("text");
+    // create bisector to get index of the closest value to x
+    const bisector = d3.bisector((d) => axes.x(d.epoch)).center;
+    const format = d3.format(".3f");
 
-    d3Selection.select("rect.overlayChart")
-               .on("mouseover", (event) => {
-                   console.log(d3.pointer(event, d3Selection));
+    d3Selection.selectChild(".overlayChart")
+               .on("mouseover", () => {
+                     hoverElts.style("display", "block");
                })
-               .on("mouseout", () => {
-                   hoverElts.style("display", "none");
+               .on("mousemove", (event) => {
+                   // get x-coordinate of mouse position relative to chart SVG
+                   const posX = d3.pointer(event, d3Selection.node())[0];
+                   const idx = bisector(data[0], posX);
+                   const x = axes.x(data[0][idx].epoch);
+                   hoverLine.attr("x1", x)
+                            .attr("x2", x);
+                   hoverPoints.each(function (d, i) {
+                       d3.select(this)
+                         .attr("cx", x)
+                         .attr("cy", axes.y(data[i][idx].value));
+                   });
+                   hoverText.each(function (d, i) {
+                       const text = i == 0 ? "epoch: " + data[0][idx].epoch : legend[i-1].text + ": " + format(data[i-1][idx].value);
+                       d3.select(this)
+                         .text(text);
+                   });
                });
-}*/
+}
 
 export function clearCharts(d3Selection) {
     d3Selection.selectAll("g.data > path").remove();

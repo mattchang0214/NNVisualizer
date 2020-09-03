@@ -27,7 +27,7 @@ button {
     color: white;
     position: absolute;
     top: -10px;
-    z-index: 1;
+    z-index: 3;
 }
 
 .hoverElts {
@@ -95,7 +95,7 @@ button {
     width: 362px;
     top: 130px;
     left: 950px;
-    z-index: -1;
+    z-index: 2;
 }
 
 #epoch {
@@ -137,6 +137,7 @@ button {
 #network {
     display: table;
     width: 912px;
+    z-index: 1;
 }
 
 #num-epochs {
