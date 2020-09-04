@@ -116,7 +116,7 @@ function addNodeControls(htmlElt, network) {
     network.hiddenLayers.map((layer, idx) => {
         const div = document.createElement("DIV");
         div.className = "node-control-pair";
-        div.style.left = (layer.xPos - 37)*(912/constants.NETWORK_WIDTH) + "px";
+        div.style.left = (layer.xPos - 39)*(912/constants.NETWORK_WIDTH) + "px";
         let btn = document.createElement("BUTTON");
         btn.innerHTML = '<svg width="2em" height="2em" viewBox="0 -1 16 16" class="bi bi-plus" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1">\n' +
                         '<path fill-rule="evenodd" d="M8 3.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5H4a.5.5 0 0 1 0-1h3.5V4a.5.5 0 0 1 .5-.5z"/>\n' + 
