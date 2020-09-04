@@ -2,7 +2,6 @@ import { constants } from "./constants.js";
 import * as selectTransform from "./selectTransform.js";
 
 // TODO:
-// Tooltip for chart
 // Print out a few right/wrong examples
 // Fix node control buttons
 
@@ -115,9 +114,9 @@ function addNodeControls(htmlElt, network) {
     }
 
     network.hiddenLayers.map((layer, idx) => {
-        let div = document.createElement("DIV");
+        const div = document.createElement("DIV");
         div.className = "node-control-pair";
-        div.style.left = (layer.xPos - 71) + "px";
+        div.style.left = (layer.xPos - 37)*(912/constants.NETWORK_WIDTH) + "px";
         let btn = document.createElement("BUTTON");
         btn.innerHTML = '<svg width="2em" height="2em" viewBox="0 -1 16 16" class="bi bi-plus" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1">\n' +
                         '<path fill-rule="evenodd" d="M8 3.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5H4a.5.5 0 0 1 0-1h3.5V4a.5.5 0 0 1 .5-.5z"/>\n' + 
@@ -127,15 +126,6 @@ function addNodeControls(htmlElt, network) {
         btn.title = "Add node to layer";
         btn.value = idx;
         div.append(btn);
-        let span = document.createElement("SPAN");
-        span.className = "node-text";
-        if (layer.size == 1) {
-            span.innerHTML = "1 neuron";
-        }
-        else {
-            span.innerHTML = layer.size + " neurons";
-        }
-        div.append(span);
         btn = document.createElement("BUTTON");
         btn.innerHTML = '<svg width="2em" height="2em" viewBox="0 -1 16 16" class="bi bi-dash" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1">\n' +
                         '<path fill-rule="evenodd" d="M3.5 8a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5z"/>\n' +
@@ -144,6 +134,15 @@ function addNodeControls(htmlElt, network) {
         btn.title = "Remove node from layer";
         btn.value = idx;
         div.append(btn);
+        const para = document.createElement("P");
+        para.className = "node-text";
+        if (layer.size == 1) {
+            para.innerHTML = "1 neuron";
+        }
+        else {
+            para.innerHTML = layer.size + " neurons";
+        }
+        div.append(para);
         htmlElt.append(div);
     });
 }
@@ -361,7 +360,6 @@ function updateHover(d3Selection, axes, data, legend) {
 export function clearCharts(d3Selection) {
     d3Selection.selectAll("g.data > path").remove();
 }
-
 
 export function update(d3Selections, htmlElts, networkData, model) {
     drawNetwork(d3Selections, networkData, model);
