@@ -3,7 +3,6 @@ import * as selectTransform from "./selectTransform.js";
 
 // TODO:
 // Print out a few right/wrong examples
-// Fix node control buttons
 
 export function initContainer(d3Selection) {
     d3Selection.append("g")
@@ -66,7 +65,7 @@ function drawNetwork(d3Selections, networkData, model) {
 
                 })
                 .on("mouseout", () => {
-                     d3Selections.tooltip.transition().duration(500).style("opacity", 0);
+                     d3Selections.tooltip.transition().duration(200).style("opacity", 0);
                 });
 
     const layers = [];
@@ -359,6 +358,9 @@ function updateHover(d3Selection, axes, data, legend) {
 
 export function clearCharts(d3Selection) {
     d3Selection.selectAll("g.data > path").remove();
+    d3Selection.selectChild(".overlayChart")
+               .on("mouseover", null)
+               .on("mousemove", null);
 }
 
 export function update(d3Selections, htmlElts, networkData, model) {
