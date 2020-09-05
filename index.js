@@ -1,5 +1,5 @@
 import { constants } from "./constants.js";
-import * as irisData from "./irisData.js";
+import * as data from "./data.js";
 import * as neuralNet from "./neuralNet.js";
 import * as ui from "./ui.js";
 
@@ -123,8 +123,8 @@ function getEpoch() {
 
 
 /***MAIN SCRIPT***/
-// load iris data
-const dataset = irisData.data2Tensor(0, 0.2);
+// load data
+const dataset = data.data2Tensor(0, 0.2);
 
 // make an SVG Container
 const svgContainer = d3.select("#network")
