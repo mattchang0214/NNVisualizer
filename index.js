@@ -1,5 +1,5 @@
 import { constants } from "./constants.js";
-import * as irisData from "./irisData.js";
+import * as data from "./data.js";
 import * as neuralNet from "./neuralNet.js";
 import * as ui from "./ui.js";
 
@@ -123,8 +123,8 @@ function getEpoch() {
 
 
 /***MAIN SCRIPT***/
-// load iris data
-const dataset = irisData.data2Tensor();
+// load data
+const dataset = data.data2Tensor(0, 0.2);
 
 // make an SVG Container
 const svgContainer = d3.select("#network")
@@ -132,7 +132,7 @@ const svgContainer = d3.select("#network")
                        .attr("viewBox", "0 0 " + constants.NETWORK_WIDTH + " " + constants.NETWORK_HEIGHT);
 ui.initContainer(svgContainer);
 
-const networkLayers = neuralNet.getDefaultNetwork();
+const networkLayers = neuralNet.getDefaultNetwork(dataset.info);
 let model = updateNetwork(svgContainer, networkLayers);
 let stopRequested = false;
 let pastWeights = [];
@@ -230,6 +230,9 @@ document.querySelector("#remove-layer-btn")
 document.querySelector("#node-controls")
         .addEventListener("click", (event) => {
             const target = event.target.closest(".add-node-btn, .remove-node-btn");
+            if (target == null) {
+                return;
+            }
             if (target.className == "add-node-btn") {
                 if (networkLayers.hiddenLayers[target.value].size > 9) {
                     return;

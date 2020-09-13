@@ -1,21 +1,18 @@
 import { constants } from "./constants.js";
 
-// TODO: Change this
-const NUM_FEATURES = 4;
-const NUM_CLASSES = 3;
 
 // define array of layer objects (size, position)
-export function getDefaultNetwork() {
+export function getDefaultNetwork(info) {
     const network = {};
-    addIOLayers(network, constants.DEFAULT_OUTPUT_ACTIVATION.toLowerCase());
+    addIOLayers(network, info, constants.DEFAULT_OUTPUT_ACTIVATION.toLowerCase());
     addHiddenLayer(network, 5, constants.DEFAULT_ACTIVATION.toLowerCase());
     addHiddenLayer(network, 6, constants.DEFAULT_ACTIVATION.toLowerCase());
     return network;
 }
 
-function addIOLayers(network, activation) {
-    network.inputLayer = createLayerInfo("input", NUM_FEATURES, null, constants.LEFT_POS);
-    network.outputLayer = createLayerInfo("output", NUM_CLASSES, activation, constants.RIGHT_POS);
+function addIOLayers(network, info, activation) {
+    network.inputLayer = createLayerInfo("input", info.numFeatures, null, constants.LEFT_POS);
+    network.outputLayer = createLayerInfo("output", info.numClasses, activation, constants.RIGHT_POS);
 }
 
 export function addHiddenLayer(network, size, activation) {
