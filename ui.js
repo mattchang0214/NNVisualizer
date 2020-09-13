@@ -3,6 +3,9 @@ import * as selectTransform from "./selectTransform.js";
 
 // TODO:
 // Print out a few right/wrong examples
+// Add more tuning options - learning rate, batch size, etc
+// Add regression example
+// Refactor - chart as separate module - matplotlib style syntax
 
 export function initContainer(d3Selection) {
     d3Selection.append("g")
@@ -297,14 +300,20 @@ export function updateChart(d3Selection, axes, data, legend) {
     updateHover(d3Selection, axes, data, legend);
 }
 
-function updateDomain(axes, data) {
-    axes.x.domain([0, data[0].length]);
+function updateDomain(axes, data, max=1) {
+    if (data != null && data.length > 0 && data[0] != null) {
+        max = data[0].length;
+    }
+    axes.x.domain([0, max]);
     // dataMax = d3.greatest(yData, (a, b) => a.value - b.value);
     // y.domain([0, dataMax]);
 }
 
-function updateAxes(d3Selection, axes, data) {
-    d3Selection.selectChild(".x-axis").call(d3.axisBottom(axes.x).tickValues(getXTickVals(data[0].length)).tickSize(3).tickFormat(d3.format(".0f")));
+function updateAxes(d3Selection, axes, data, max=1) {
+    if (data != null && data.length > 0 && data[0] != null) {
+        max = data[0].length;
+    }
+    d3Selection.selectChild(".x-axis").call(d3.axisBottom(axes.x).tickValues(getXTickVals(max)).tickSize(3).tickFormat(d3.format(".0f")));
     // d3Selection.selectChild(".y-axis").call(d3.axisLeft(axes.y).tickValues(d3.range(0, 2, 0.5)).tickSize(3));
 }
 
@@ -356,11 +365,27 @@ function updateHover(d3Selection, axes, data, legend) {
                });
 }
 
-export function clearCharts(d3Selection) {
-    d3Selection.selectAll("g.data > path").remove();
-    d3Selection.selectChild(".overlayChart")
-               .on("mouseover", null)
-               .on("mousemove", null);
+/*export function addTable(htmlElt, features, results) {
+    let row = document.createElement("TR");
+    for (const feature of features) {
+        const th = document.createElement("TH");
+        th.innerHTML = feature;
+        row.append(th);
+    }
+}*/
+
+export function clearCharts(chartInfo) {
+    for (const chart of chartInfo) {
+        const svg = chart.d3Selection.selectChild("svg");
+        svg.selectChild("g.data").selectChildren("path").remove();
+        svg.selectChild(".overlayChart")
+           .on("mouseover", null)
+           .on("mousemove", null);
+
+        chart.data = [[], []];
+        updateDomain(chart.axes, null);
+        updateAxes(svg, chart.axes, null);
+    }
 }
 
 export function update(d3Selections, htmlElts, networkData, model) {

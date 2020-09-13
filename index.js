@@ -108,8 +108,9 @@ function updateNetwork(svgContainer, network) {
 
 function interruptTraining() {
     stopRequested = true;
-    ui.clearCharts(d3.selectAll(".chart > svg"));
+    ui.clearCharts(chartInfo);
     document.querySelector("#epoch").innerHTML = "Epoch: 0";
+    document.querySelector("#train-btn").disabled = false;
 }
 
 function getEpoch() {
@@ -174,13 +175,13 @@ ui.addCharts(chartInfo);
 document.querySelector("#train-btn")
         .addEventListener("click", async () => {
             stopRequested = false;
+            document.querySelector("#train-btn").disabled = true;
             pastWeights = await trainModel(dataset);
-        }, { once: true });
+        }/*, { once: true }*/);
 
 document.querySelector("#reset-btn")
         .addEventListener("click", () => {
             interruptTraining();
-            ui.clearCharts(d3.select("#charts").selectAll("svg"));
             model = updateNetwork(svgContainer, networkLayers);
         });
 

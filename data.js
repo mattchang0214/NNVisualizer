@@ -13,14 +13,15 @@ function getInfo(dataset) {
     if (dataset.classes != null) {
         return { 
                    numSamples: dataset.xData.length,
-                   numFeatures: dataset.xData[0].length,
+                   numFeatures: dataset.features.length,
                    numClasses: dataset.classes.length
                };  
     }
 
     return { 
                numSamples: dataset.xData.length,
-               numFeatures: dataset.xData[0].length,
+               numFeatures: dataset.features.length,
+               numClasses: 0
            };        
 }
 
@@ -201,10 +202,11 @@ export function data2Tensor(datasetID, valSplit) {
             yTrain: yTrainTensor,
             xVal: normalizedXVal,
             yVal: yValTensor,
-            mean: inputMean,
-            std: inputStd,
+            /*mean: inputMean,
+            std: inputStd,*/
             info: info,
-            classes: dataset.classes
+            classes: dataset.classes,
+            features: dataset.features
         };
     });
 }

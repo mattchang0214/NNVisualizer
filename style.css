@@ -18,7 +18,7 @@ button {
     border: 0px solid rgb(255, 255, 255);
     border-radius: 50%;
     background-color: rgb(200, 200, 200);
-    cursor:pointer;
+    cursor: pointer;
     transition-duration: 0.3s;
 }
 
@@ -68,7 +68,7 @@ button {
     border: 0px solid rgb(255, 255, 255);
     border-radius: 50%;
     background-color: rgb(200, 200, 200);
-    cursor:pointer;
+    cursor: pointer;
     transition-duration: 0.3s;
 }
 
@@ -86,7 +86,7 @@ button {
     border-radius: 25%;
     background-color: rgb(50, 50, 50);
     margin: 10px 5px;
-    cursor:pointer;
+    cursor: pointer;
     transition-duration: 0.3s;
     position: absolute;
     top: 10px;
@@ -180,7 +180,7 @@ button {
     background-color: rgb(52, 188, 164);
     vertical-align: 13px;
     margin: 10px 5px 10px 15px;
-    cursor:pointer;
+    cursor: pointer;
     transition-duration: 0.3s;
 }
 
@@ -219,11 +219,17 @@ button {
     border: 0px solid rgb(255, 255, 255);
     border-radius: 50%;
     background-color: rgb(33, 150, 243);
-    cursor:pointer;
+    cursor: pointer;
     transition-duration: 0.3s;
 }
 
-#train-btn:hover {
+#train-btn:hover:enabled {
     background-color: rgb(12, 136, 235);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
 }
+
+#train-btn:disabled {
+    background-color: rgb(120, 120, 120);
+    cursor: default;
+}
+

@@ -74,15 +74,11 @@ function createOption(elt, selected, displayImg) {
     return a;
 }
 
-
 function createSelectDisplay(selectElt, selected, val) {
     const selectedOption = document.createElement("DIV");
     selectedOption.className = "select-display";
     selectedOption.style.width = selectElt.style.width;
     
-    // const input = document.createElement("INPUT");
-    // input.type = "hidden";
-    // input.value = val;
     selected.className = "selected-option";
     selectedOption.append(selected);
     

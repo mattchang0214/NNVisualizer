@@ -162,5 +162,6 @@ export const IRIS_DATA =
                                    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
                                    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
                                 ],
-                         classes: ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
+                         classes: ["Iris-setosa", "Iris-versicolor", "Iris-virginica"],
+                         features: ["sepal length", "sepal width", "petal length", "petal width"]
                      });
