@@ -148,15 +148,15 @@ function splitData(inputGroups, outputGroups, numClasses, valSplit) {
 /**
  * Shuffle data in the training and validation sets.
  *
- * @param inputGroups The input data grouped by classes.
- * @param outputGroups The output data grouped by classes.
- * @param numClasses The number of output classes.
- * @param valSplit Fraction of data to be used as validation data: a number between 0 and 1.
+ * @param xTrain The training input data.
+ * @param yTrain The training output data.
+ * @param xVal The validation input data.
+ * @param yVal The validation output data.
  * @return An `Object`, with
- *   - training inputs as an `Array` of shape [(1 - valSplit) * numSamples, numFeatures].
- *   - training outputs as an `Array` of length (1 - valSplit) * numSamples.
- *   - validation inputs as an `Array` of shape [valSplit * numSamples, numFeatures].
- *   - validation outputs as an `Array` of length valSplit * numSamples.
+ *   - training inputs as an `Array` of same shape as xTrain.
+ *   - training outputs as an `Array` of same shape as yTrain.
+ *   - validation inputs as an `Array` of same shape as xVal.
+ *   - validation outputs as an `Array` of same shape as yVal.
  */
 function shuffleTrainVal(xTrain, yTrain, xVal, yVal) {
     const shuffledTrain = shuffleData(xTrain, yTrain);
@@ -169,7 +169,6 @@ function shuffleTrainVal(xTrain, yTrain, xVal, yVal) {
         yVal: shuffledVal.outputs
     };
 }
-
 
 
 /**
