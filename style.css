@@ -8,6 +8,18 @@ button {
     outline:none;
 }
 
+table {
+    border-spacing: 0;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
 .add-node-btn, .remove-node-btn {
     width: 30px;
     height: 30px;

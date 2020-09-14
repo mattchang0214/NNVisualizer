@@ -5,7 +5,7 @@ export const constants = Object.freeze({
     RADIUS: 19,
     LEFT_POS: 100,
     RIGHT_POS: 850,
-    DEFAULT_EPOCHS: 20,
+    DEFAULT_EPOCHS: 30,
     DEFAULT_ACTIVATION: "ReLU",
     DEFAULT_OUTPUT_ACTIVATION: "Softmax",
     CHART_WIDTH: 360,

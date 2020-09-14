@@ -129,5 +129,3 @@ function addClickHandler(container, expand, hide, list, displayImg) {
         }
     });
 }
-
-

@@ -95,7 +95,7 @@ function shuffleData(dataX, dataY) {
  *   - shuffled inputs as an `Array` of shape [numSamples, numFeatures].
  *   - shuffled outputs as an `Array` of length numSamples.
  */
-function shuffleByClass(inputGroups, outputGroups, numClasses) {
+/*function shuffleByClass(inputGroups, outputGroups, numClasses) {
     const shuffledXGroups = [];
     const shuffledYGroups = [];
     for (let i = 0; i < numClasses; i++) {
@@ -108,7 +108,7 @@ function shuffleByClass(inputGroups, outputGroups, numClasses) {
         inputGroups: shuffledXGroups, 
         outputGroups: shuffledYGroups
     };
-}
+}*/
 
 /**
  * Splits inputs and outputs into training and validation sets.
@@ -134,17 +134,42 @@ function splitData(inputGroups, outputGroups, numClasses, valSplit) {
         Array.prototype.push.apply(xVal, inputGroups[i].slice(0, numValSamples));
         Array.prototype.push.apply(yVal, outputGroups[i].slice(0, numValSamples));
         Array.prototype.push.apply(xTrain, inputGroups[i].slice(numValSamples));
-        Array.prototype.push.apply(yTrain, outputGroups[i].slice(numValSamples));
-        
+        Array.prototype.push.apply(yTrain, outputGroups[i].slice(numValSamples)); 
     }
     
     return {
         xTrain: xTrain,
         yTrain: yTrain,
         xVal: xVal, 
-        yVal, yVal
+        yVal: yVal
     };
 }
+
+/**
+ * Shuffle data in the training and validation sets.
+ *
+ * @param inputGroups The input data grouped by classes.
+ * @param outputGroups The output data grouped by classes.
+ * @param numClasses The number of output classes.
+ * @param valSplit Fraction of data to be used as validation data: a number between 0 and 1.
+ * @return An `Object`, with
+ *   - training inputs as an `Array` of shape [(1 - valSplit) * numSamples, numFeatures].
+ *   - training outputs as an `Array` of length (1 - valSplit) * numSamples.
+ *   - validation inputs as an `Array` of shape [valSplit * numSamples, numFeatures].
+ *   - validation outputs as an `Array` of length valSplit * numSamples.
+ */
+function shuffleTrainVal(xTrain, yTrain, xVal, yVal) {
+    const shuffledTrain = shuffleData(xTrain, yTrain);
+    const shuffledVal = shuffleData(xVal, yVal);
+    
+    return {
+        xTrain: shuffledTrain.inputs,
+        yTrain: shuffledTrain.outputs,
+        xVal: shuffledVal.inputs, 
+        yVal: shuffledVal.outputs
+    };
+}
+
 
 
 /**
@@ -176,16 +201,16 @@ export function data2Tensor(datasetID, valSplit) {
     return tf.tidy(() => {
         const info = getInfo(dataset);
         const groups = groupDataByClass(dataset, info);
-        const shuffledData = shuffleByClass(groups.inputGroups, groups.outputGroups, info.numClasses);
-        const irisData = splitData(shuffledData.inputGroups, shuffledData.outputGroups, info.numClasses, valSplit);
+        const splicedData = splitData(groups.inputGroups, groups.outputGroups, info.numClasses, valSplit);
+        const shuffledData = shuffleTrainVal(splicedData.xTrain, splicedData.yTrain, splicedData.xVal, splicedData.yVal);
         
         // Create 2D `tf.Tensor` to hold the training and validation data.
-        const xTrainTensor = tf.tensor2d(irisData.xTrain, [irisData.xTrain.length, info.numFeatures]);
-        const xValTensor = tf.tensor2d(irisData.xVal, [irisData.xVal.length, info.numFeatures]);
+        const xTrainTensor = tf.tensor2d(shuffledData.xTrain, [shuffledData.xTrain.length, info.numFeatures]);
+        const xValTensor = tf.tensor2d(shuffledData.xVal, [shuffledData.xVal.length, info.numFeatures]);
         // Create 1D `tf.Tensor` to hold the labels, and convert the number label
         // from the set {0, 1, 2} into one-hot encoding (e.g., 0 --> [1, 0, 0]).
-        const yTrainTensor = tf.oneHot(tf.tensor1d(irisData.yTrain).toInt(), info.numClasses);
-        const yValTensor = tf.oneHot(tf.tensor1d(irisData.yVal).toInt(), info.numClasses);
+        const yTrainTensor = tf.oneHot(tf.tensor1d(shuffledData.yTrain).toInt(), info.numClasses);
+        const yValTensor = tf.oneHot(tf.tensor1d(shuffledData.yVal).toInt(), info.numClasses);
 
         // Create a 2D `tf.Tensor` for the input data (for taking the mean and std).
         const inputTensor = tf.tensor2d(dataset.xData, [info.numSamples, info.numFeatures]);
@@ -202,8 +227,8 @@ export function data2Tensor(datasetID, valSplit) {
             yTrain: yTrainTensor,
             xVal: normalizedXVal,
             yVal: yValTensor,
-            /*mean: inputMean,
-            std: inputStd,*/
+            mean: inputMean,
+            std: inputStd,
             info: info,
             classes: dataset.classes,
             features: dataset.features

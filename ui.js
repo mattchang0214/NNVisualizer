@@ -1,11 +1,6 @@
 import { constants } from "./constants.js";
 import * as selectTransform from "./selectTransform.js";
 
-// TODO:
-// Print out a few right/wrong examples
-// Add more tuning options - learning rate, batch size, etc
-// Add regression example
-// Refactor - chart as separate module - matplotlib style syntax
 
 export function initContainer(d3Selection) {
     d3Selection.append("g")
@@ -365,14 +360,45 @@ function updateHover(d3Selection, axes, data, legend) {
                });
 }
 
-/*export function addTable(htmlElt, features, results) {
+export function addTable(htmlElt, dataset, xTest, yTest, yPred) {
     let row = document.createElement("TR");
-    for (const feature of features) {
+    for (const feature of dataset.features) {
         const th = document.createElement("TH");
         th.innerHTML = feature;
         row.append(th);
     }
-}*/
+    for (const feature of ["prediction", "confidence", "ground truth" ]) {
+        const th = document.createElement("TH");
+        th.innerHTML = feature;
+        row.append(th);
+    }
+    htmlElt.append(row);
+
+    for (let i = 0; i < xTest.length; i++) {
+        row = document.createElement("TR");
+        const featVals = xTest[i].dataSync();
+        for (const val of featVals) {
+            const td = document.createElement("TD");
+            td.innerHTML = new Number(val).toPrecision(2);
+            row.append(td);
+        }
+        const predIdx = yPred[i].argMax().dataSync()[0];
+        const trueIdx = yTest[i].argMax().dataSync()[0];
+
+        for (const val of [dataset.classes[predIdx], new Number(yPred[i].max().dataSync()[0]).toPrecision(4), dataset.classes[trueIdx]]) {
+            const td = document.createElement("TD");
+            td.innerHTML = val;
+            row.append(td);
+            if (trueIdx == predIdx) {
+                row.style.backgroundColor = "green";
+            }
+            else {
+                row.style.backgroundColor = "red";
+            }
+        }
+        htmlElt.append(row);
+    }
+}
 
 export function clearCharts(chartInfo) {
     for (const chart of chartInfo) {

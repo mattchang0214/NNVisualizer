@@ -76,6 +76,10 @@ async function trainModel(dataset) {
         }
     });
 
+    const xTest = dataset.xVal.slice(0, 6);
+    const yPred = model.predict(xTest);
+    ui.addTable(document.querySelector("#results"), dataset, tf.unstack(xTest.mul(dataset.std).add(dataset.mean)), tf.unstack(dataset.yVal.slice(0, 6)), tf.unstack(yPred));
+
     epochSlider.disabled = false;
     return pastWeights;
 }
@@ -177,7 +181,7 @@ document.querySelector("#train-btn")
             stopRequested = false;
             document.querySelector("#train-btn").disabled = true;
             pastWeights = await trainModel(dataset);
-        }/*, { once: true }*/);
+        });
 
 document.querySelector("#reset-btn")
         .addEventListener("click", () => {
