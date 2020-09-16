@@ -63,13 +63,8 @@ function groupDataByClass(dataset, info) {
  *   - shuffled shuffled outputs as an `Array` of the same shape as dataY.
  */
 function shuffleData(dataX, dataY) {
-    // Create array of indices.
-    const indices = [];
-    for (let i = 0; i < dataY.length; i++) {
-        indices.push(i);
-    }
     // Randomly shuffle indices.
-    tf.util.shuffle(indices);
+    const indices = tf.util.createShuffledIndices(dataY.length);
 
     // Create arrays for shuffled inputs and outputs.
     const shuffledX = [];

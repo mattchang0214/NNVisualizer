@@ -43,6 +43,7 @@ async function trainModel(dataset) {
     const history = await model.fit(dataset.xTrain, dataset.yTrain, {
         batchSize: BATCH_SIZE,
         epochs: getEpoch(),
+        shuffle: true,
         validationData: [dataset.xVal, dataset.yVal],
         callbacks: {
             onTrainBegin: (logs) => {
@@ -76,9 +77,7 @@ async function trainModel(dataset) {
         }
     });
 
-    const xTest = dataset.xVal.slice(0, 6);
-    const yPred = model.predict(xTest);
-    ui.addTable(document.querySelector("#results"), dataset, tf.unstack(xTest.mul(dataset.std).add(dataset.mean)), tf.unstack(dataset.yVal.slice(0, 6)), tf.unstack(yPred));
+    ui.addTable(document.querySelector("#results"), dataset, model);
 
     epochSlider.disabled = false;
     return pastWeights;
@@ -113,6 +112,7 @@ function updateNetwork(svgContainer, network) {
 function interruptTraining() {
     stopRequested = true;
     ui.clearCharts(chartInfo);
+    ui.clearTableData(document.querySelector("#results"));
     document.querySelector("#epoch").innerHTML = "Epoch: 0";
     document.querySelector("#train-btn").disabled = false;
 }
@@ -173,6 +173,7 @@ const chartInfo = [
                       }
                   ];
 ui.addCharts(chartInfo);
+ui.addTableHeader(document.querySelector("#results"), dataset);
 
 
 /***EVENT HANDLERS***/

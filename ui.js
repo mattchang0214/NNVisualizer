@@ -360,46 +360,6 @@ function updateHover(d3Selection, axes, data, legend) {
                });
 }
 
-export function addTable(htmlElt, dataset, xTest, yTest, yPred) {
-    let row = document.createElement("TR");
-    for (const feature of dataset.features) {
-        const th = document.createElement("TH");
-        th.innerHTML = feature;
-        row.append(th);
-    }
-    for (const feature of ["prediction", "confidence", "ground truth" ]) {
-        const th = document.createElement("TH");
-        th.innerHTML = feature;
-        row.append(th);
-    }
-    htmlElt.append(row);
-
-    for (let i = 0; i < xTest.length; i++) {
-        row = document.createElement("TR");
-        const featVals = xTest[i].dataSync();
-        for (const val of featVals) {
-            const td = document.createElement("TD");
-            td.innerHTML = new Number(val).toPrecision(2);
-            row.append(td);
-        }
-        const predIdx = yPred[i].argMax().dataSync()[0];
-        const trueIdx = yTest[i].argMax().dataSync()[0];
-
-        for (const val of [dataset.classes[predIdx], new Number(yPred[i].max().dataSync()[0]).toPrecision(4), dataset.classes[trueIdx]]) {
-            const td = document.createElement("TD");
-            td.innerHTML = val;
-            row.append(td);
-            if (trueIdx == predIdx) {
-                row.style.backgroundColor = "green";
-            }
-            else {
-                row.style.backgroundColor = "red";
-            }
-        }
-        htmlElt.append(row);
-    }
-}
-
 export function clearCharts(chartInfo) {
     for (const chart of chartInfo) {
         const svg = chart.d3Selection.selectChild("svg");
@@ -413,6 +373,79 @@ export function clearCharts(chartInfo) {
         updateAxes(svg, chart.axes, null);
     }
 }
+
+export function addTableHeader(tableElt, dataset) {
+    let row = document.createElement("TR");
+    const headers = [];
+    headers.push(...dataset.features, "prediction", "confidence", "ground truth");
+    for (const feature of headers) {
+        const th = document.createElement("TH");
+        th.innerHTML = feature;
+        row.append(th);
+    }
+    tableElt.append(row);
+
+    row = document.createElement("TR");
+    row.id = "placeholder";
+    const th = document.createElement("TD");
+    th.innerHTML = "no trained model yet";
+    th.colSpan = headers.length;
+    row.append(th);
+    tableElt.append(row);
+}
+
+export function addTable(tableElt, dataset, model) {
+    tableElt.querySelector("#placeholder").style.display = "none";
+
+    tf.tidy(() => {
+        let xTest = dataset.xVal.slice(0, 6);
+        const yTest = tf.unstack(dataset.yVal.slice(0, 6));
+        const yPred = tf.unstack(model.predict(xTest));
+        xTest = tf.unstack(xTest.mul(dataset.std).add(dataset.mean));
+
+        for (let i = 0; i < xTest.length; i++) {
+            const row = document.createElement("TR");
+            const featVals = xTest[i].dataSync();
+            for (const val of featVals) {
+                const td = document.createElement("TD");
+                td.innerHTML = new Number(val).toPrecision(2);
+                row.append(td);
+            }
+            const predIdx = yPred[i].argMax().dataSync()[0];
+            const trueIdx = yTest[i].argMax().dataSync()[0];
+            const maxVal = yPred[i].max().dataSync()[0];
+
+            const predTD = document.createElement("TD");
+            predTD.innerHTML = dataset.classes[predIdx];
+            row.append(predTD);
+            predTD.style.color = trueIdx == predIdx ? "green" : "red";
+
+            for (const val of [new Number(maxVal).toPrecision(4), dataset.classes[trueIdx]]) {
+                const td = document.createElement("TD");
+                td.innerHTML = val;
+                row.append(td);
+            }
+            tableElt.append(row);
+        }
+    });
+}
+
+export function clearTableData(tableElt) {
+    while (tableElt.firstChild) {
+        if (tableElt.lastChild.id == "placeholder") {
+            break;
+        }
+        tableElt.removeChild(tableElt.lastChild);
+    }
+    tableElt.querySelector("#placeholder").style.display = "table-row";
+}
+
+export function clearTable(tableElt) {
+    while (tableElt.firstChild) {
+        tableElt.removeChild(tableElt.lastChild);
+    }
+}
+
 
 export function update(d3Selections, htmlElts, networkData, model) {
     drawNetwork(d3Selections, networkData, model);
