@@ -43,6 +43,7 @@ async function trainModel(dataset) {
     const history = await model.fit(dataset.xTrain, dataset.yTrain, {
         batchSize: BATCH_SIZE,
         epochs: getEpoch(),
+        shuffle: true,
         validationData: [dataset.xVal, dataset.yVal],
         callbacks: {
             onTrainBegin: (logs) => {
@@ -75,6 +76,8 @@ async function trainModel(dataset) {
             },
         }
     });
+
+    ui.addTable(document.querySelector("#results"), dataset, model);
 
     epochSlider.disabled = false;
     return pastWeights;
@@ -109,6 +112,7 @@ function updateNetwork(svgContainer, network) {
 function interruptTraining() {
     stopRequested = true;
     ui.clearCharts(chartInfo);
+    ui.clearTableData(document.querySelector("#results"));
     document.querySelector("#epoch").innerHTML = "Epoch: 0";
     document.querySelector("#train-btn").disabled = false;
 }
@@ -169,6 +173,7 @@ const chartInfo = [
                       }
                   ];
 ui.addCharts(chartInfo);
+ui.addTableHeader(document.querySelector("#results"), dataset);
 
 
 /***EVENT HANDLERS***/
@@ -177,7 +182,7 @@ document.querySelector("#train-btn")
             stopRequested = false;
             document.querySelector("#train-btn").disabled = true;
             pastWeights = await trainModel(dataset);
-        }/*, { once: true }*/);
+        });
 
 document.querySelector("#reset-btn")
         .addEventListener("click", () => {

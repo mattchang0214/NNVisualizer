@@ -2,10 +2,22 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Cairo', sans-serif;
+    min-height: 1280px;
 }
 
 button {
     outline:none;
+}
+
+table {
+    border-spacing: 0;
+    margin-left: 220px;
+    margin-bottom: 20px;
+}
+
+th, td {
+    padding: 15px;
+    text-align: center;
 }
 
 .add-node-btn, .remove-node-btn {
@@ -122,6 +134,10 @@ button {
     border-radius: 15px; 
 }
 
+#example-heading {
+    margin: 10px 150px;
+}
+
 #layer-controls {
     width: 900px;
     height: 30px;
@@ -187,6 +203,19 @@ button {
 #reset-btn:hover {
     background-color: rgb(46, 169, 147);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+}
+
+#results tr th {
+    background-color: rgb(50, 50, 50);
+    color: white;
+}
+
+#results tr:nth-child(odd) td {
+    background-color: rgb(220, 220, 220);
+}
+
+#results tr:nth-child(even) td {
+    background-color: rgb(200, 200, 200);
 }
 
 #slidecontainer {
