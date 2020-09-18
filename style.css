@@ -35,11 +35,10 @@ th, td {
 }
 
 .control-elt {
-    margin: 10px 5px;
+    margin: 0 10px;
     padding: 0;
     color: white;
-    position: absolute;
-    top: -10px;
+    float: left;
     z-index: 3;
 }
 
@@ -62,6 +61,7 @@ th, td {
 .node-control-pair {
     position: absolute;
     padding: 5px 0 0;
+    min-width: 80px;
 }
 
 .node-text {
@@ -69,6 +69,14 @@ th, td {
     margin: 0;
     line-height: 1em;
     text-align: center;
+}
+
+.right {
+    float: right;   
+}
+
+#activation-controls {
+    margin: 0;
 }
 
 #add-layer-btn, #remove-layer-btn {
@@ -97,17 +105,14 @@ th, td {
     border: 0px solid rgb(255, 255, 255);
     border-radius: 25%;
     background-color: rgb(50, 50, 50);
-    margin: 10px 5px;
+    margin: 20px 15px;
     cursor: pointer;
     transition-duration: 0.3s;
-    position: absolute;
-    top: 10px;
-    right: 10px;
 }
 
 #advanced-controls:hover {
     background-color: rgb(60, 60, 60);
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.6);
 }
 
 #charts {
@@ -169,9 +174,10 @@ th, td {
 }
 
 #num-epochs {
-    position: absolute;
+    margin: 0 5px;
+    /*position: absolute;
     top: -16px;
-    right: 480px;
+    right: 480px;*/
 }
 
 #num-epochs-input {
@@ -195,7 +201,7 @@ th, td {
     border-radius: 50%;
     background-color: rgb(52, 188, 164);
     vertical-align: 13px;
-    margin: 10px 5px 10px 15px;
+    margin-left: 15px;
     cursor: pointer;
     transition-duration: 0.3s;
 }
@@ -262,3 +268,20 @@ th, td {
     cursor: default;
 }
 
+@media screen and (max-width: 1335px) {
+    #slidecontainer {
+        width: 25%;
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    #activation-controls {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 680px) {
+    #num-epochs {
+        display: none;
+    }
+}

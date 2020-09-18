@@ -150,13 +150,11 @@ export function addActivationSelection(network) {
                      labels: ["Hidden Layer Activation", "Output Layer Activation"],
                      id: ["hidden", "output"],
                      defaults: [constants.DEFAULT_ACTIVATION, constants.DEFAULT_OUTPUT_ACTIVATION],
-                     pos: [285, 85]
                  };
     for (const idx in data.labels) {
         const div = document.createElement("DIV");
         div.className = "control-elt";
         div.id = data.id[idx];
-        div.style.right = data.pos[idx] + "px";
         const label = document.createElement("LABEL");
         label.innerHTML = data.labels[idx];
         label.className = "input-label-pair";
@@ -388,7 +386,7 @@ export function addTableHeader(tableElt, dataset) {
     row = document.createElement("TR");
     row.id = "placeholder";
     const th = document.createElement("TD");
-    th.innerHTML = "no trained model yet";
+    th.innerHTML = "No trained model!";
     th.colSpan = headers.length;
     row.append(th);
     tableElt.append(row);

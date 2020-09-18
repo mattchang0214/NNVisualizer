@@ -29,16 +29,17 @@
     <div class="main-control-elt" id="slidecontainer">
       <input type="range" class="slider" id="epoch-slider" min="0" max="30" value="0" title="Drag to see how model changes over time">
     </div>
-    <form class="main-control-elt" id="num-epochs">
-      <label class="input-label-pair">Number of Epochs</label>
-      <input type="number" class="input-label-pair" id="num-epochs-input" min="1" max="200" title="Number of training epochs">
-    </form>
-    <div class="main-control-elt" id="activation-controls"></div>
-    <button class="main-control-elt" id="advanced-controls" title="Advanced settings">
+
+    <button class="main-control-elt right" id="advanced-controls" title="Advanced settings">
       <svg width="26px" height="26px" viewBox="0 -1 16 16" class="bi bi-list" fill="white" xmlns="http://www.w3.org/2000/svg">
         <path fill-rule="evenodd" d="M2.5 11.5A.5.5 0 0 1 3 11h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 3h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
       </svg>
     </button>
+    <div class="main-control-elt right" id="activation-controls"></div>
+    <form class="main-control-elt right" id="num-epochs">
+      <label class="input-label-pair">Number of Epochs</label>
+      <input type="number" class="input-label-pair" id="num-epochs-input" min="1" max="200" title="Number of training epochs">
+    </form>
   </div>
   <div id="layer-controls">
     <button id="add-layer-btn" title="Add hidden layer">
