@@ -39,6 +39,7 @@ th, td {
     padding: 0;
     color: white;
     float: left;
+    position: relative;
     z-index: 3;
 }
 
@@ -165,6 +166,7 @@ th, td {
 
 #network {
     display: table;
+    position: relative;
     width: 912px;
     z-index: 1;
 }

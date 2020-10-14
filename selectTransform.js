@@ -1,4 +1,4 @@
-export function transform(selectElt, settings) {
+export function transform(selectElt, {replace=false, displaySelImg=true} = {}) {
     if (selectElt.nodeName == null || selectElt.nodeName.toLowerCase() !== "select") {
         throw new Error("Attempted to transform invalid element: argument must be a <select> element");
     }
@@ -11,33 +11,31 @@ export function transform(selectElt, settings) {
     optionList.className = "select-options";
     optionList.style.display = "none";
     optionList.style.width = selectElt.style.width;
-    const options = [];
-    let selected = createOption(selectElt.childNodes[0], true, settings.displayImg);
+    // default selected option is the first one
+    let selected = createOption(selectElt.childNodes[0], true, displaySelImg);
     let val = selectElt.childNodes[0].value ? selectElt.childNodes[0].value : selectElt.childNodes[0].innerHTML;
+    // convert options to list items
     for (const child of selectElt.childNodes) {
         if (child.nodeName != null && child.nodeName.toLowerCase() === "option") {
             const option = createOption(child, false, true);
+            // if option was selected, create "special" list item and toggle class
             if (child.selected) {
-                selected = createOption(child, true, settings.displayImg);
+                selected = createOption(child, true, displaySelImg);
                 val = child.value ? child.value : child.innerHTML;
                 option.classList.toggle("selected");
             }
-            options.push(option);
+            const optionItem = document.createElement("LI");
+            optionItem.append(option);
+            optionList.append(optionItem);
         }
     }
 
-    for (const option of options) {
-        const optionContainer = document.createElement("LI");
-        optionContainer.append(option);
-        optionList.append(optionContainer);
-    }
-
-    const selectedBox = createSelectDisplay(selectElt, selected, val);
+    const selectedBox = createSelectDisplay(selected, val, selectElt.style.width);
     selectContainer.append(selectedBox.selectedOption, optionList);
     selectContainer.value = val;
-    addClickHandler(selectContainer, selectedBox.downCaret, selectedBox.upCaret, optionList, settings.displayImg);
+    addClickHandler(selectContainer, selectedBox.downCaret, selectedBox.upCaret, optionList, displaySelImg);
 
-    if (settings.replace) {
+    if (replace) {
         selectElt.parentNode.replaceChild(selectContainer, selectElt);
     }
     
@@ -74,10 +72,10 @@ function createOption(elt, selected, displayImg) {
     return a;
 }
 
-function createSelectDisplay(selectElt, selected, val) {
+function createSelectDisplay(selected, val, width) {
     const selectedOption = document.createElement("DIV");
     selectedOption.className = "select-display";
-    selectedOption.style.width = selectElt.style.width;
+    selectedOption.style.width = width;
     
     selected.className = "selected-option";
     selectedOption.append(selected);
@@ -98,14 +96,14 @@ function createSelectDisplay(selectElt, selected, val) {
     return { selectedOption: selectedOption, downCaret: span1, upCaret: span2 };
 }
 
-function addClickHandler(container, expand, hide, list, displayImg) {
+function addClickHandler(container, expand, hide, list, displaySelImg) {
     container.addEventListener("click", (event) => {
         expand.style.display = expand.style.display === "none" ? "block" : "none";
         hide.style.display = hide.style.display === "none" ? "block" : "none";
         list.style.display = list.style.display === "none" ? "block" : "none";
 
         const target = event.target.closest(".option");
-        if (target != null) {
+        if (target !== null) {
             const selected = container.querySelector(".select-display");
             const val = target.querySelector("input").value;
             if (container.value != val) {
@@ -113,7 +111,7 @@ function addClickHandler(container, expand, hide, list, displayImg) {
                 container.dispatchEvent(new InputEvent("input"));
             }
             selected.querySelector("label").innerHTML = target.querySelector("label").innerHTML;
-            if (displayImg) {
+            if (displaySelImg) {
                 selected.querySelector("img").src = target.querySelector("img").src;
             }
             container.querySelector("li > .selected").classList.toggle("selected");
@@ -122,7 +120,7 @@ function addClickHandler(container, expand, hide, list, displayImg) {
     });
 
     document.body.addEventListener("click", (event) => {
-        if (event.target.closest(".select-container") != container) {
+        if (event.target.closest(".select-container") !== container) {
             expand.style.display = "block";
             hide.style.display = "none";
             list.style.display = "none";

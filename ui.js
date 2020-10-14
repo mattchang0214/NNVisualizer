@@ -57,9 +57,9 @@ function drawNetwork(d3Selections, networkData, model) {
                 .on("mouseover", (event) => {
                     d3Selections.tooltip.style("display", "block");
                     d3Selections.tooltip.transition().duration(200).style("opacity", 0.9);
-                    d3Selections.tooltip.html("Weight value: <br>" + Math.trunc(weightVals[event.target.id]*1000)/1000)
-                                .style("top", (event.pageY + 7) + "px")
-                                .style("left", (event.pageX + 15) + "px");
+                    d3Selections.tooltip.html(`Weight value: <br>${Math.trunc(weightVals[event.target.id]*1000)/1000}`)
+                                .style("top", `${event.pageY + 7}px`)
+                                .style("left", `${event.pageX + 15}px`);
 
                 })
                 .on("mouseout", () => {
@@ -77,7 +77,7 @@ function drawNetwork(d3Selections, networkData, model) {
     // draw nodes for each layer
     for (const layer of layers) {
         d3Selections.svgNodes
-                    .selectChild("g#" + layer.name)
+                    .selectChild(`g#${layer.name}`)
                     .selectChildren("circle")
                     .data(networkData.nodes[layer.name])
                     .join((enter) => enter.append("circle"))
@@ -99,9 +99,9 @@ export function updateEdgeWeights(d3Selections, weightVals) {
                              .on("mouseover", (event) => {
                                  d3Selections.tooltip.style("display", "block");
                                  d3Selections.tooltip.transition().duration(200).style("opacity", 0.9);
-                                 d3Selections.tooltip.html("Weight value: <br>" + Math.trunc(weightVals[event.target.id]*1000)/1000)
-                                             .style("top", (event.pageY + 7) + "px")
-                                             .style("left", (event.pageX + 15) + "px");
+                                 d3Selections.tooltip.html(`Weight value: <br>${Math.trunc(weightVals[event.target.id]*1000)/1000}`)
+                                             .style("top", `${event.pageY + 7}px`)
+                                             .style("left", `${event.pageX + 15}px`);
                                 });
 }
 
@@ -113,7 +113,7 @@ function addNodeControls(htmlElt, network) {
     network.hiddenLayers.map((layer, idx) => {
         const div = document.createElement("DIV");
         div.className = "node-control-pair";
-        div.style.left = (layer.xPos - 39)*(912/constants.NETWORK_WIDTH) + "px";
+        div.style.left = `${(layer.xPos - 39)*(912/constants.NETWORK_WIDTH)}px`;
         let btn = document.createElement("BUTTON");
         btn.innerHTML = '<svg width="2em" height="2em" viewBox="0 -1 16 16" class="bi bi-plus" fill="white" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="1">\n' +
                         '<path fill-rule="evenodd" d="M8 3.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5H4a.5.5 0 0 1 0-1h3.5V4a.5.5 0 0 1 .5-.5z"/>\n' + 
@@ -133,11 +133,11 @@ function addNodeControls(htmlElt, network) {
         div.append(btn);
         const para = document.createElement("P");
         para.className = "node-text";
-        if (layer.size == 1) {
+        if (layer.size === 1) {
             para.innerHTML = "1 neuron";
         }
         else {
-            para.innerHTML = layer.size + " neurons";
+            para.innerHTML = `${layer.size} neurons`;
         }
         div.append(para);
         htmlElt.append(div);
@@ -168,12 +168,12 @@ export function addActivationSelection(network) {
             option.setAttribute("option-img", "img/"+func.toLowerCase()+".svg");
             option.setAttribute("option-width", constants.IMG_WIDTH);
             option.setAttribute("option-height", constants.IMG_HEIGHT);
-            if (func == data.defaults[idx]) {
+            if (func === data.defaults[idx]) {
                 option.selected = true;
             }
             select.append(option);
         }
-        div.append(label, selectTransform.transform(select, {replace: false, displayImg: false}));
+        div.append(label, selectTransform.transform(select, {displaySelImg: false}));
         document.querySelector("#activation-controls").append(div);
     }
 }
@@ -183,7 +183,7 @@ export function addCharts(chartInfo) {
     for (const chart of chartInfo) {
         const container = chart.d3Selection
                                .append("svg")
-                               .attr("viewBox", "0 0 " + constants.CHART_WIDTH + " " + constants.CHART_HEIGHT);
+                               .attr("viewBox", `0 0 ${constants.CHART_WIDTH} ${constants.CHART_HEIGHT}`);
 
         const x = d3.scaleLinear()
                 .domain(chart.domainX)
@@ -193,26 +193,25 @@ export function addCharts(chartInfo) {
                     .rangeRound([constants.CHART_HEIGHT - margin.bottom, margin.top]);
         container.append("g")
                  .attr("class","x-axis")
-                 .attr("transform", "translate(0, " + (constants.CHART_HEIGHT - margin.bottom) + ")")
+                 .attr("transform", `translate(0, ${constants.CHART_HEIGHT - margin.bottom})`)
                  .call(d3.axisBottom(x).tickValues(chart.ticksX).tickSize(3).tickFormat(d3.format(".0f")));
         container.append("g")
                  .attr("class", "y-axis")
-                 .attr("transform", "translate(" + margin.left + ", 0)")
+                 .attr("transform", `translate(${margin.left}, 0)`)
                  .call(d3.axisLeft(y).tickValues(chart.ticksY).tickSize(3).tickFormat(d3.format(".2f")));
         container.append("text")             
-                 .attr("transform", "translate(" + (constants.CHART_WIDTH/2 + 30) + ", " + 
-                                        (constants.CHART_HEIGHT - 3) + ")")
+                 .attr("transform", `translate(${constants.CHART_WIDTH/2 + 30}, ${constants.CHART_HEIGHT - 3})`)
                  .style("text-anchor", "middle")
                  .text(chart.labelX);
         container.append("text")
-                 .attr("transform", "rotate(-90) translate(" + (-constants.CHART_HEIGHT/2 + 10) + ", 15)")
+                 .attr("transform", `rotate(-90) translate(${-constants.CHART_HEIGHT/2 + 10}, 15)`)
                  .style("text-anchor", "middle")
                  .text(chart.labelY);
         container.append("g")
                  .attr("class", "data");
         container.append("g")
                  .attr("class", "legend")
-                 .attr("transform","translate(" + (margin.left+10) + ", " + (margin.top+5) + ")")
+                 .attr("transform", `translate(${margin.left+10}, ${margin.top+5})`)
                  .call(legend, chart.legend);
 
         const hoverElts = container.append("g")
@@ -240,7 +239,7 @@ export function addCharts(chartInfo) {
 function legend(d3Selection, entries) {
     let idx = 0;
     for (const entry of entries) {
-        const label = d3Selection.append("g").attr("class", "label").attr("transform", "translate(0," + (idx++)*17 + ")");
+        const label = d3Selection.append("g").attr("class", "label").attr("transform", `translate(0, ${(idx++)*17})`);
         label.append("line")
              .attr("x1", 0)
              .attr("y1", 0)
@@ -258,11 +257,11 @@ function legend(d3Selection, entries) {
 
 function addHover(d3Selection, legend, margin) {
     d3Selection.append("text")
-               .attr("transform", "translate(" + (margin.left+10) + ", " + (constants.CHART_HEIGHT - margin.bottom - 5 - (legend.length)*12) + ")");
+               .attr("transform", `translate(${margin.left+10}, ${constants.CHART_HEIGHT - margin.bottom - 5 - (legend.length)*12})`);
 
     for (const idx in legend) {
         d3Selection.append("text")
-                   .attr("transform", "translate(" + (margin.left+10) + ", " + (constants.CHART_HEIGHT - margin.bottom - 5 - (legend.length-1-idx)*12) + ")");
+                   .attr("transform", `translate(${margin.left+10}, ${constants.CHART_HEIGHT - margin.bottom - 5 - (legend.length-1-idx)*12})`);
     }
 
     d3Selection.append("line")
@@ -311,7 +310,7 @@ function updateAxes(d3Selection, axes, data, max=1) {
 }
 
 function getXTickVals(length) {
-    return d3.range(0, length+1, Math.trunc(length/10)+((length%10!=0)|0));
+    return d3.range(0, length+1, Math.trunc(length/10)+((length%10!==0)|0));
 }
 
 function updatePaths(d3Selection, lineGenerator, data, legend) {
@@ -351,7 +350,7 @@ function updateHover(d3Selection, axes, data, legend) {
                          .attr("cy", axes.y(data[i][idx].value));
                    });
                    hoverText.each(function (d, i) {
-                       const text = i == 0 ? "epoch: " + data[0][idx].epoch : legend[i-1].text + ": " + format(data[i-1][idx].value);
+                       const text = i === 0 ? `epoch: ${data[0][idx].epoch}` : `${legend[i-1].text}: ${format(data[i-1][idx].value)}`;
                        d3.select(this)
                          .text(text);
                    });
@@ -416,7 +415,7 @@ export function addTable(tableElt, dataset, model) {
             const predTD = document.createElement("TD");
             predTD.innerHTML = dataset.classes[predIdx];
             row.append(predTD);
-            predTD.style.color = trueIdx == predIdx ? "green" : "red";
+            predTD.style.color = trueIdx === predIdx ? "green" : "red";
 
             for (const val of [new Number(maxVal).toPrecision(4), dataset.classes[trueIdx]]) {
                 const td = document.createElement("TD");
@@ -430,7 +429,7 @@ export function addTable(tableElt, dataset, model) {
 
 export function clearTableData(tableElt) {
     while (tableElt.firstChild) {
-        if (tableElt.lastChild.id == "placeholder") {
+        if (tableElt.lastChild.id === "placeholder") {
             break;
         }
         tableElt.removeChild(tableElt.lastChild);
@@ -452,11 +451,11 @@ export function update(d3Selections, htmlElts, networkData, model) {
     htmlElts.slider.disabled = true;
     htmlElts.slider.value = 0;
 
-    if (networkData.network.hiddenLayers.length == 1) {
+    if (networkData.network.hiddenLayers.length === 1) {
         htmlElts.layerText.innerHTML = "1 hidden layer";
     }
     else {
-        htmlElts.layerText.innerHTML = networkData.network.hiddenLayers.length + " hidden layers";
+        htmlElts.layerText.innerHTML = `${networkData.network.hiddenLayers.length} hidden layers`;
     }
     addNodeControls(htmlElts.nodeControls, networkData.network);
 }

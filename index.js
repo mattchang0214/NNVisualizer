@@ -55,7 +55,7 @@ async function trainModel(dataset) {
                     model.stopTraining = true;
                     return;
                 }
-                epochNum.innerHTML = "Epoch: " + (epoch+1);
+                epochNum.innerHTML = `Epoch: ${epoch+1}`;
                 epochSlider.value = epoch+1;
 
                 const weightVals = ui.getModelWeights(model);
@@ -70,7 +70,7 @@ async function trainModel(dataset) {
                 // Plot the loss and accuracy values at the end of every training epoch
                 for (const chart of chartInfo) {
                     chart.data[0].push({epoch: epoch+1, value: logs[chart.type]});
-                    chart.data[1].push({epoch: epoch+1, value: logs["val_" + chart.type]});
+                    chart.data[1].push({epoch: epoch+1, value: logs[`val_${chart.type}`]});
                     ui.updateChart(chart.d3Selection.selectChild("svg"), chart.axes, chart.data, chart.legend);
                 }
             },
@@ -134,7 +134,7 @@ const dataset = data.data2Tensor(0, 0.2);
 // make an SVG Container
 const svgContainer = d3.select("#network")
                        .append("svg")
-                       .attr("viewBox", "0 0 " + constants.NETWORK_WIDTH + " " + constants.NETWORK_HEIGHT);
+                       .attr("viewBox", `0 0 ${constants.NETWORK_WIDTH} ${constants.NETWORK_HEIGHT}`);
 ui.initContainer(svgContainer);
 
 const networkLayers = neuralNet.getDefaultNetwork(dataset.info);
@@ -195,7 +195,7 @@ document.querySelector("#epoch-slider")
             if (event.target.value >= pastWeights.length) {
                 return;
             }
-            document.querySelector("#epoch").innerHTML = "Epoch: " + event.target.value;
+            document.querySelector("#epoch").innerHTML = `Epoch: ${event.target.value}`;
             const weightVals = pastWeights[event.target.value];
 
             ui.updateEdgeWeights({ 
@@ -236,10 +236,10 @@ document.querySelector("#remove-layer-btn")
 document.querySelector("#node-controls")
         .addEventListener("click", (event) => {
             const target = event.target.closest(".add-node-btn, .remove-node-btn");
-            if (target == null) {
+            if (target === null) {
                 return;
             }
-            if (target.className == "add-node-btn") {
+            if (target.className === "add-node-btn") {
                 if (networkLayers.hiddenLayers[target.value].size > 9) {
                     return;
                 }
@@ -247,7 +247,7 @@ document.querySelector("#node-controls")
                 networkLayers.hiddenLayers[target.value].size++;
                 model = updateNetwork(svgContainer, networkLayers);
             }
-            else if (target.className == "remove-node-btn") {
+            else if (target.className === "remove-node-btn") {
                 if (networkLayers.hiddenLayers[target.value].size < 2) {
                     return;
                 }

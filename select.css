@@ -39,6 +39,7 @@
     z-index: 10;
     margin: 0;
     padding: 0;
+    position: absolute;
 }
 
 .select-display {
